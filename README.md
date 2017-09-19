@@ -11,11 +11,19 @@ Flexible interactive visualization for large trees using [D3.js](d3js.org).
 ## Installation
 
 ```julia
-
+Pkg.clone("https://github.com/sisl/D3Trees.jl.git")
 ```
 
 ## Usage
 
+```julia
+children = [[2,3], [], [4], []]
+text = ["one", "2", "III", "four"]
+t = D3Tree(children, text)
 
+inchrome(t)
+```
+
+or, see [examples/simple.ipynb]()
 
 Many more features to come.
