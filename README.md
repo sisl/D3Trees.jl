@@ -24,6 +24,6 @@ t = D3Tree(children, text)
 inchrome(t)
 ```
 
-or, see [examples/hello.ipynb]()
+or, see [examples/hello.ipynb](examples/hello.ipynb)
 
 Many more features to come.
