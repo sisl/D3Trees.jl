@@ -24,6 +24,6 @@ t = D3Tree(children, text)
 inchrome(t)
 ```
 
-or, see [examples/hello.ipynb](examples/hello.ipynb)
+or, see [examples/hello.ipynb](https://nbviewer.jupyter.org/github/sisl/D3Trees.jl/blob/master/examples/hello.ipynb)
 
 Many more features to come.
