@@ -1,5 +1,8 @@
 using D3Trees
 using Base.Test
 
-# write your own tests here
-@test 1 == 2
+children = [[2,3], [], [4], []]
+text = ["one", "2", "III", "four"]
+t = D3Tree(children, text)
+
+stringmime(MIME("text/html"), t)
