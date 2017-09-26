@@ -127,7 +127,7 @@ function showTree() {
 
       nodeEnter.append("circle")
           .attr("r", 1e-6)
-          .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+          //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
       var tbox = nodeEnter.append("text")
           .attr("y", 25)
@@ -144,7 +144,7 @@ function showTree() {
 
       nodeUpdate.select("circle")
           .attr("r", 10)
-          .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+          //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
       nodeUpdate.select("text")
           .style("fill-opacity", 1);
