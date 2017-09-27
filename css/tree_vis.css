@@ -7,6 +7,17 @@
 	  fill: #fff;
 	  stroke: steelblue;
 	  stroke-width: 3px;
+      r: 10;
+}
+
+.node rect {
+	  fill: #fff;
+	  stroke: steelblue;
+	  stroke-width: 3px;
+      x: -10;
+      y: -10;
+      width: 20;
+      height: 20;
 }
 
 .node path {

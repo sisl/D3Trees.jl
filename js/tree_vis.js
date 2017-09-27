@@ -30,7 +30,6 @@ function loadScript(url, callback)
     head.appendChild(script);
 }
 
-
 function showTree() {
         
     // var margin = {top: 20, right: 120, bottom: 20, left: 120},
@@ -83,7 +82,6 @@ function showTree() {
     function initializeChildren(d) {
       // create children
       var children = treeData.children[d.dataID];
-      console.log(children)
       d.children = [];
       if (children) {
         for (var i = 0; i < children.length; i++) {
@@ -123,28 +121,36 @@ function showTree() {
       var nodeEnter = node.enter().append("g")
           .attr("class", "node")
           .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; })
-          .on("click", click);
+          .on("click", click)
 
       nodeEnter.append("circle")
-          .attr("r", 1e-6)
-          //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+          .attr("r", "10px")
+          .attr("style", function(d) { return treeData.style[d.dataID];} )
 
       var tbox = nodeEnter.append("text")
           .attr("y", 25)
           .attr("text-anchor", "middle")
           .style("fill-opacity", 1e-6);
 
-      tbox.append("tspan")
-          .text( function(d) { return treeData.text[d.dataID]; } );
+      tbox.each( function(d) {
+          var el = d3.select(this)
+          var text = treeData.text[d.dataID];
+          var lines = text.split('\n');
+          for (var i = 0; i < lines.length; i++) {
+              var tspan = el.append("tspan").text(lines[i]);
+              if (i > 0) {
+                  tspan.attr("x", 0).attr("dy", "1.2em");
+              }
+          }
+      });
+
+      //tooltip
+      nodeEnter.append("title").text( function(d) { return treeData.tooltip[d.dataID];} );
 
       // Transition nodes to their new position.
       var nodeUpdate = node.transition()
           .duration(duration)
           .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-
-      nodeUpdate.select("circle")
-          .attr("r", 10)
-          //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
       nodeUpdate.select("text")
           .style("fill-opacity", 1);
@@ -154,9 +160,6 @@ function showTree() {
           .duration(duration)
           .attr("transform", function(d) { return "translate(" + source.x + "," + source.y + ")"; })
           .remove();
-
-      nodeExit.select("circle")
-          .attr("r", 1e-6);
 
       nodeExit.select("text")
           .style("fill-opacity", 1e-6);
@@ -169,6 +172,10 @@ function showTree() {
       // XXX link width should be based on transition data, not node data
       link.enter().insert("path", "g")
           .attr("class", "link")
+          .attr("style", function(d) {
+              var ls = treeData.link_style[d.target.dataID];
+              return ls;
+          } )
           .attr("d", function(d) {
             var o = {x: source.x0, y: source.y0};
             return diagonal({source: o, target: o});
@@ -197,17 +204,13 @@ function showTree() {
 
     // Toggle children on click.
     function click(d) {
-      console.log("clicked");
       if (d.children) {
-        console.log("has children");
         d._children = d.children;
         d.children = null;
       } else if (d._children) {
-        console.log("hidden children");
         d.children = d._children;
         d._children = null;
       } else {
-        console.log("initializing children");
         initializeChildren(d);
       }
       update(d);
