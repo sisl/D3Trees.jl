@@ -8,6 +8,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
     html_string = """
         <html>
         <head>
+            <title>$(t.title)</title>
         </head>
         <body>
         <div id="$div">
