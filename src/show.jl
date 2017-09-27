@@ -29,3 +29,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
 
     println(f,html_string)
 end
+
+# fallback when only the repl is available
+Base.show(io::IO, m::MIME"text/plain", t::D3Tree) = show(io, m, D3TreeView(D3TreeNode(t, 1), 3))
+Base.show(io::IO, m::MIME"text/plain", v::D3TreeView) = shownode(io, v.root, v.depth, "", "")

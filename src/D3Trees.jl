@@ -5,6 +5,8 @@ using Blink
 
 export
     D3Tree,
+    D3TreeNode,
+    D3TreeView,
 
     blink,
     inchrome
@@ -28,21 +30,24 @@ function D3Tree(children; kwargs...)
                  )
 end
     
-
-#=
-struct TreeView{T}
-    tree::T
-    root::Int
-    depth::Int
-end
-=#
-
 struct D3TreeNode
     tree::D3Tree
     index::Int
 end
 
+# this should be AbstractTrees.children
+children(n::D3TreeNode) = (D3TreeNode(n.tree, c) for c in n.tree.children[n.index])
+n_children(n::D3TreeNode) = length(n.tree.children[n.index])
+# this should be AbstractTrees.printnode
+printnode(io::IO, n::D3TreeNode) = print(io, n.tree.text[n.index])
+
+struct D3TreeView
+    root::D3TreeNode
+    depth::Int
+end
+
 include("show.jl")
 include("displays.jl")
+include("text.jl")
 
 end # module

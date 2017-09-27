@@ -20,6 +20,9 @@ stringmime(MIME("text/html"), t)
 
 # inchrome(t)
 
+@show D3Trees.children(D3TreeNode(t, 1))
+show(STDOUT, MIME("text/plain"), t)
+
 nbinclude("../examples/hello.ipynb")
 
 n = 1_000_000
