@@ -11,6 +11,10 @@ Flexible interactive visualization for large trees using [D3.js](d3js.org).
 ## Installation
 
 ```julia
+Pkg.add("D3Trees")
+```
+or
+```julia
 Pkg.clone("https://github.com/sisl/D3Trees.jl.git")
 ```
 
@@ -39,5 +43,3 @@ inchrome(t)
 ```
 
 or, see [examples/hello.ipynb](https://nbviewer.jupyter.org/github/sisl/D3Trees.jl/blob/master/examples/hello.ipynb)
-
-Many more features to come.
