@@ -18,6 +18,13 @@ Pkg.clone("https://github.com/sisl/D3Trees.jl.git")
 
 ## Usage
 
+The structure of a D3Tree is specified with *lists of children for each node* stored in a `Vector` of `Int` `Vector`s. For example
+```julia
+D3Tree([[2,3], [], [4], []])
+```
+creates a tree with four nodes. Nodes 2 and 3 are children of node 1, and node 4 is the only child of node 3. Nodes 2 and 4 are childless.
+
+In an IJulia notebook, the tree will automatically be displayed using D3.js. To get an interactive display in a chrome browser from the repl or a script, you can use the `inchrome` function. The `blink` function can also open it in a standalone window using the `Blink.jl` package.
 ```julia
 children = [[2,3], [4,5], [6,7], [8,9], [1], [], [], [], []]
 t = D3Tree(children)
@@ -27,7 +34,7 @@ inchrome(t)
 By clicking on the nodes, you can expand it to look like this:
 ![Tree](img/tree.png)
 
-Or, for more options,
+Optional arguments control other aspects of the style,
 ```julia
 children = [[2,3], [], [4], []]
 text = ["one\n(second line)", "2", "III", "four"]
@@ -38,7 +45,8 @@ t = D3Tree(children,
            text=text,
            style=style,
            tooltip=tooltip,
-           link_style=link_style)
+           link_style=link_style,
+           title="My Tree")
 
 inchrome(t)
 ```
