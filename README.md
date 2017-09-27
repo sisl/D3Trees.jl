@@ -18,8 +18,22 @@ Pkg.clone("https://github.com/sisl/D3Trees.jl.git")
 
 ```julia
 children = [[2,3], [], [4], []]
-text = ["one", "2", "III", "four"]
-t = D3Tree(children, text)
+t = D3Tree(children)
+
+inchrome(t)
+```
+or, for more options,
+```julia
+children = [[2,3], [], [4], []]
+text = ["one\n(second line)", "2", "III", "four"]
+style = ["", "fill:red", "r:14", "opacity:0.7"]
+link_style = ["", "stroke:blue", "", "stroke-width:10px"]
+tooltip = ["pops", "up", "on", "hover"]
+t = D3Tree(children,
+           text=text,
+           style=style,
+           tooltip=tooltip,
+           link_style=link_style)
 
 inchrome(t)
 ```

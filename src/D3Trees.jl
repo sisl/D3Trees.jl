@@ -21,7 +21,7 @@ function D3Tree(children; kwargs...)
     kwd = Dict(kwargs)
     n = length(children)
     return D3Tree(children,
-                  get(kwd, :text, fill("", n)),
+                  get(kwd, :text, collect(string(i) for i in 1:n)),
                   get(kwd, :tooltip, fill("", n)),
                   get(kwd, :style, fill("", n)),
                   get(kwd, :link_style, fill("", n))
