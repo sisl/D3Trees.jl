@@ -19,12 +19,15 @@ Pkg.clone("https://github.com/sisl/D3Trees.jl.git")
 ## Usage
 
 ```julia
-children = [[2,3], [], [4], []]
+children = [[2,3], [4,5], [6,7], [8,9], [1], [], [], [], []]
 t = D3Tree(children)
 
 inchrome(t)
 ```
-or, for more options,
+By clicking on the nodes, you can expand it to look like this:
+![Tree](img/tree.png)
+
+Or, for more options,
 ```julia
 children = [[2,3], [], [4], []]
 text = ["one\n(second line)", "2", "III", "four"]
@@ -41,3 +44,7 @@ inchrome(t)
 ```
 
 or, see [examples/hello.ipynb](https://nbviewer.jupyter.org/github/sisl/D3Trees.jl/blob/master/examples/hello.ipynb)
+
+## Browser compatibility
+
+This package works best in the Google chrome or chromium browser.
