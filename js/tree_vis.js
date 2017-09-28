@@ -130,6 +130,7 @@ function showTree() {
       var tbox = nodeEnter.append("text")
           .attr("y", 25)
           .attr("text-anchor", "middle")
+          //.text( function(d) { return treeData.text[d.dataID]; } )
           .style("fill-opacity", 1e-6);
 
       tbox.each( function(d) {

@@ -6,8 +6,10 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
     div = "treevis$(randstring())"
 
     html_string = """
+        <!DOCTYPE html>
         <html>
         <head>
+            <meta charset="UTF-8">
             <title>$(t.title)</title>
         </head>
         <body>
