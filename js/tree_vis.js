@@ -125,7 +125,7 @@ function showTree() {
 
       nodeEnter.append("circle")
           .attr("r", "10px")
-          .attr("style", function(d) { return treeData.style[d.dataID];} )
+          .attr("style", function(d) { return treeData.style[d.dataID]; } )
 
       var tbox = nodeEnter.append("text")
           .attr("y", 25)
