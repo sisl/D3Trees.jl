@@ -1,14 +1,14 @@
 if (typeof $ === 'undefined') {
-    loadScript("https://code.jquery.com/jquery-3.1.1.min.js", run)
+    loadScript("https://code.jquery.com/jquery-3.1.1.min.js", run);
 } else {
-    run()
+    run();
 }
 
 function run() {
     if (typeof d3 === 'undefined') {
-        loadScript("https://d3js.org/d3.v3.js", showTree)
+        loadScript("https://d3js.org/d3.v3.js", showTree);
     } else {
-        showTree()
+        showTree();
     }
 }
 
@@ -51,6 +51,7 @@ function showTree() {
 
     // see http://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js
     if (d3.select("#"+div+"_svg").empty()) {
+        $(".d3twarn").remove();
         d3.select("#"+div).append("svg")
             .attr("id", div+"_svg")
             .attr("width", width + margin.right + margin.left)
