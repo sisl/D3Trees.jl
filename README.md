@@ -34,7 +34,7 @@ inchrome(t)
 By clicking on the nodes, you can expand it to look like this:
 ![Tree](img/tree.png)
 
-Optional arguments control other aspects of the style, for example
+Optional arguments control other aspects of the style (use `julia> ?D3Tree` for a complete list), for example
 ```julia
 children = [[2,3], [], [4], []]
 text = ["one\n(second line)", "2", "III", "four"]

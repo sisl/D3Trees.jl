@@ -22,7 +22,8 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
             var treeData = $tree_json;
             var rootID = $root_id-1;
             var div = "$div";
-            var expandLevel = $(t.init_expanded ? 100000 : 0)
+            var expandLevel = $(get(t.options, :init_expanded, false) ? 100000 : 0)
+            var initDuration = $(get(t.options, :init_duration, 750))
             $js
             })();
         </script>
@@ -42,6 +43,6 @@ end
 
 # fallback when only the repl is available
 function Base.show(io::IO, m::MIME"text/plain", t::D3Tree)
-    show(io, m, D3TreeView(D3TreeNode(t, 1), t.init_expanded ? typemax(Int) : 3))
+    show(io, m, D3TreeView(D3TreeNode(t, 1), get(t.options, :init_expanded, false) ? typemax(Int) : 3))
 end
 Base.show(io::IO, m::MIME"text/plain", v::D3TreeView) = shownode(io, v.root, v.depth, "", "")

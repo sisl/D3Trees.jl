@@ -39,7 +39,6 @@ function showTree() {
         // TODO make height a parameter of TreeVisualizer
 
     var i = 0,
-        duration = 750,
         root;
 
     var tree = d3.layout.tree()
@@ -70,7 +69,7 @@ function showTree() {
     root.x0 = width / 2;
     root.y0 = 0;
 
-    update(root);
+    update(root, initDuration);
     console.log("tree should appear");
 
     function createDisplayNode(id, expandLevel) {
@@ -100,7 +99,7 @@ function showTree() {
      * 
      * source is a d3 node that has position, etc.
     */
-    function update(source) {
+    function update(source, duration) {
 
       width = $("#"+div).width() - margin.right - margin.left,
       height = $("#"+div).height() - margin.top - margin.bottom;
@@ -218,7 +217,7 @@ function showTree() {
       } else {
         initializeChildren(d, 1);
       }
-      update(d);
+      update(d, 750);
     }
 
 }

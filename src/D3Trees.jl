@@ -18,9 +18,33 @@ struct D3Tree
     style::Vector{String}
     link_style::Vector{String}
     title::String
-    init_expanded::Bool
+    options::Dict{Symbol, Any}
 end
 
+"""
+    D3Tree(children, <keyword arguments>)
+
+Construct a tree to be displayed using D3 in a browser or ipython notebook.
+
+# Arguments
+
+## Required
+
+- `children::Vector{Vector{Int}}`: List of children for each node. E.g.
+```julia
+D3Tree([[2,3], [], [4], []])
+```
+creates a tree with four nodes. Nodes 2 and 3 are children of node 1, and node 4 is the only child of node 3. Nodes 2 and 4 are childless.
+
+## Keyword:
+- `text::Vector{String}` - text to appear under each node.
+- `tooltip::Vector{String}` - text to appear when hovering over each node.
+- `style::Vector{String}` - html style for each node.
+- `link_style::Vector{String}` - html style for each link.
+- `title::String` - html title.
+- `init_expanded::Bool` - whether to display with all nodes initially expanded.
+- `init_duration::Number` - duration of the initial animation in ms.
+"""
 function D3Tree(children; kwargs...)
     kwd = Dict(kwargs)
     n = length(children)
@@ -30,7 +54,7 @@ function D3Tree(children; kwargs...)
                   get(kwd, :style, fill("", n)),
                   get(kwd, :link_style, fill("", n)),
                   get(kwd, :title, "Julia D3Tree"),
-                  get(kwd, :init_expanded, false)
+                  convert(Dict{Symbol, Any}, kwd)
                  )
 end
     
