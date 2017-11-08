@@ -66,28 +66,31 @@ function showTree() {
 
     // console.log("tree data:");
     // console.log(treeData[rootID]);
-    root = createDisplayNode(rootID);
+    root = createDisplayNode(rootID, expandLevel);
     root.x0 = width / 2;
     root.y0 = 0;
 
     update(root);
     console.log("tree should appear");
 
-    function createDisplayNode(id) {
+    function createDisplayNode(id, expandLevel) {
       var dnode = {"dataID":id,
-                   "children":null,
+                   "children": null,
                    "_children":null};
+      if (expandLevel > 0) {
+        initializeChildren(dnode, expandLevel);
+      }
       return dnode;
     }
 
-    function initializeChildren(d) {
+    function initializeChildren(d, expandLevel) {
       // create children
       var children = treeData.children[d.dataID];
       d.children = [];
       if (children) {
         for (var i = 0; i < children.length; i++) {
           var cid = children[i]-1;
-          d.children.push(createDisplayNode(cid));
+          d.children.push(createDisplayNode(cid, expandLevel-1));
         }
       }
     }
@@ -213,7 +216,7 @@ function showTree() {
         d.children = d._children;
         d._children = null;
       } else {
-        initializeChildren(d);
+        initializeChildren(d, 1);
       }
       update(d);
     }
