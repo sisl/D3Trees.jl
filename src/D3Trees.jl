@@ -31,10 +31,10 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook.
 ## Required
 
 - `children::Vector{Vector{Int}}`: List of children for each node. E.g.
-```julia
-D3Tree([[2,3], [], [4], []])
-```
-creates a tree with four nodes. Nodes 2 and 3 are children of node 1, and node 4 is the only child of node 3. Nodes 2 and 4 are childless.
+  ```julia
+  D3Tree([[2,3], [], [4], []])
+  ```
+  creates a tree with four nodes. Nodes 2 and 3 are children of node 1, and node 4 is the only child of node 3. Nodes 2 and 4 are childless.
 
 ## Keyword:
 - `text::Vector{String}` - text to appear under each node.
