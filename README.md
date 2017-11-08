@@ -34,7 +34,7 @@ inchrome(t)
 By clicking on the nodes, you can expand it to look like this:
 ![Tree](img/tree.png)
 
-Optional arguments control other aspects of the style,
+Optional arguments control other aspects of the style, for example
 ```julia
 children = [[2,3], [], [4], []]
 text = ["one\n(second line)", "2", "III", "four"]
@@ -46,10 +46,14 @@ t = D3Tree(children,
            style=style,
            tooltip=tooltip,
            link_style=link_style,
-           title="My Tree")
+           title="My Tree",
+           init_expanded=true)
 
 inchrome(t)
 ```
+will yield
+
+![Expanded tree with style](img/styled_tree.png)
 
 or, see [examples/hello.ipynb](https://nbviewer.jupyter.org/github/sisl/D3Trees.jl/blob/master/examples/hello.ipynb)
 

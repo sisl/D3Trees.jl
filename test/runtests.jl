@@ -18,7 +18,15 @@ t = D3Tree(children,
 
 stringmime(MIME("text/html"), t)
 
+t2 = D3Tree(children,
+            text=text,
+            style=style,
+            tooltip=tooltip,
+            link_style=link_style,
+            init_expanded=true)
+
 # inchrome(t)
+# inchrome(t2)
 
 @show D3Trees.children(D3TreeNode(t, 1))
 show(STDOUT, MIME("text/plain"), t)

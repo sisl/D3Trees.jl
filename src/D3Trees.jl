@@ -18,6 +18,7 @@ struct D3Tree
     style::Vector{String}
     link_style::Vector{String}
     title::String
+    init_expanded::Bool
 end
 
 function D3Tree(children; kwargs...)
@@ -28,7 +29,8 @@ function D3Tree(children; kwargs...)
                   get(kwd, :tooltip, fill("", n)),
                   get(kwd, :style, fill("", n)),
                   get(kwd, :link_style, fill("", n)),
-                  get(kwd, :title, "Julia D3Tree")
+                  get(kwd, :title, "Julia D3Tree"),
+                  get(kwd, :init_expanded, false)
                  )
 end
     
