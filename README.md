@@ -47,7 +47,7 @@ t = D3Tree(children,
            tooltip=tooltip,
            link_style=link_style,
            title="My Tree",
-           init_expanded=true)
+           init_expand=10)
 
 inchrome(t)
 ```
