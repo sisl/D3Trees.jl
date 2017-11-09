@@ -22,8 +22,9 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
             var treeData = $tree_json;
             var rootID = $root_id-1;
             var div = "$div";
-            var expandLevel = $(get(t.options, :init_expanded, false) ? 100000 : 0)
+            var initExpand = $(get(t.options, :init_expand, 0))
             var initDuration = $(get(t.options, :init_duration, 750))
+            var svgHeight = $(get(t.options, :svg_height, 600))
             $js
             })();
         </script>

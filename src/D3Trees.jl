@@ -42,8 +42,9 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook.
 - `style::Vector{String}` - html style for each node.
 - `link_style::Vector{String}` - html style for each link.
 - `title::String` - html title.
-- `init_expanded::Bool` - whether to display with all nodes initially expanded.
+- `init_expand::Integer` - levels to expand initially.
 - `init_duration::Number` - duration of the initial animation in ms.
+- `svg_height::Number` - height of the svg containing the tree in px.
 """
 function D3Tree(children; kwargs...)
     kwd = Dict(kwargs)

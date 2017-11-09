@@ -23,11 +23,13 @@ t2 = D3Tree(children,
             style=style,
             tooltip=tooltip,
             link_style=link_style,
-            init_expanded=true,
-            init_duration=5000)
+            init_expand=1000,
+            init_duration=5000,
+            svg_height=300
+           )
 
-inchrome(t)
-inchrome(t2)
+# inchrome(t)
+# inchrome(t2)
 
 @show D3Trees.children(D3TreeNode(t, 1))
 show(STDOUT, MIME("text/plain"), t)

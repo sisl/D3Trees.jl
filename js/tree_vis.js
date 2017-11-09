@@ -35,7 +35,7 @@ function showTree() {
     // var margin = {top: 20, right: 120, bottom: 20, left: 120},
     var margin = {top: 20, right: 120, bottom: 80, left: 120},
         width = $("#"+div).width() - margin.right - margin.left,
-        height = 600 - margin.top - margin.bottom;
+        height = svgHeight - margin.top - margin.bottom;
         // TODO make height a parameter of TreeVisualizer
 
     var i = 0,
@@ -65,7 +65,7 @@ function showTree() {
 
     // console.log("tree data:");
     // console.log(treeData[rootID]);
-    root = createDisplayNode(rootID, expandLevel);
+    root = createDisplayNode(rootID, initExpand);
     root.x0 = width / 2;
     root.y0 = 0;
 
