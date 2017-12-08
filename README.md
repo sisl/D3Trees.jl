@@ -57,6 +57,26 @@ will yield
 
 or, see [examples/hello.ipynb](https://nbviewer.jupyter.org/github/sisl/D3Trees.jl/blob/master/examples/hello.ipynb)
 
+### Text output
+
+D3Trees also supports basic text output. This can be achieved by writing to an io object with the `text/plain` mime. This format is the automatic output if a D3Tree is created in the REPL:
+
+```
+julia> children = [[2,3], [4,5], [6,7], [8,9], [1], [], [], [], []];
+
+julia> t = D3Tree(children)
+1
+├──2
+│  ├──4
+│  │  ├──8 (0 children)
+│  │  └──9 (0 children)
+│  └──5
+│     └──1 (2 children)
+└──3
+   ├──6
+   └──7
+```
+
 ## Browser compatibility
 
 This package works best in the Google chrome or chromium browser.
