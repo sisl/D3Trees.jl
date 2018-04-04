@@ -2,6 +2,8 @@ module D3Trees
 
 using JSON
 using Blink
+using AbstractTrees
+import AbstractTrees: printnode
 
 export
     D3Tree,
@@ -46,7 +48,7 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook.
 - `init_duration::Number` - duration of the initial animation in ms.
 - `svg_height::Number` - height of the svg containing the tree in px.
 """
-function D3Tree(children; kwargs...)
+function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)
     n = length(children)
     return D3Tree(children,
@@ -58,17 +60,64 @@ function D3Tree(children; kwargs...)
                   convert(Dict{Symbol, Any}, kwd)
                  )
 end
-    
+
+"""
+    D3Tree(node; detect_repeat=true)
+
+Construct a tree to be displayed using D3 in a browser or ipython notebook from any object that implements the AbstractTrees interface.
+
+# Arguments
+
+## Required
+
+- `node`: an object that has AbstractTrees.children(node) and AbstractTrees.printnode(io::IO, node)
+
+## Keyword
+
+- `detect_repeat`: if true, uses a dictionary to detect whether a node has appeared previously
+"""
+function D3Tree(node; detect_repeat::Bool=true)
+    t = D3Tree(Vector{Int}[])
+    if detect_repeat
+        node_dict = Dict{Any, Int}()
+        push_node!(t, node, node_dict)
+    else
+        push_node!(t, node)
+    end
+    return t
+end
+
+function push_node!(t, node, node_dict=nothing)
+    if !(node_dict isa Void) && haskey(node_dict, node)
+        return node_dict[node]
+    end
+
+    ind = length(t.children) + 1
+    if !(node_dict isa Void)
+        node_dict[node] = ind
+    end
+    if length(t.children) < ind
+        push!(t.children, Int[])
+        iob = IOBuffer()
+        printnode(iob, node)
+        push!(t.text, String(take!(iob)))
+    end
+    for c in children(node)
+        c_ind = push_node!(t, c, node_dict)
+        push!(t.children[ind], c_ind)
+    end
+    return ind
+end
+
 struct D3TreeNode
     tree::D3Tree
     index::Int
 end
 
-# this should be AbstractTrees.children
-children(n::D3TreeNode) = (D3TreeNode(n.tree, c) for c in n.tree.children[n.index])
+AbstractTrees.children(n::D3TreeNode) = (D3TreeNode(n.tree, c) for c in n.tree.children[n.index])
+AbstractTrees.children(t::D3Tree) = children(D3TreeNode(t, c) for c in t.children[1])
 n_children(n::D3TreeNode) = length(n.tree.children[n.index])
-# this should be AbstractTrees.printnode
-printnode(io::IO, n::D3TreeNode) = print(io, n.tree.text[n.index])
+AbstractTrees.printnode(io::IO, n::D3TreeNode) = print(io, n.tree.text[n.index])
 
 struct D3TreeView
     root::D3TreeNode

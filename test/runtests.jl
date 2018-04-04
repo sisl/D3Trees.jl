@@ -8,15 +8,15 @@ text = ["one\n(second line)", "2", "III", "four"]
 style = ["", "fill:red", "r:14", "opacity:0.7"]
 link_style = ["", "stroke:blue", "", "stroke-width:10px"]
 tooltip = ["pops", "up", "on", "hover"]
-t = D3Tree(children,
+t1 = D3Tree(children,
            text=text,
            style=style,
            tooltip=tooltip,
            link_style=link_style)
 
-@show json(t)
+@show json(t1)
 
-stringmime(MIME("text/html"), t)
+stringmime(MIME("text/html"), t1)
 
 t2 = D3Tree(children,
             text=text,
@@ -31,8 +31,8 @@ t2 = D3Tree(children,
 # inchrome(t)
 # inchrome(t2)
 
-@show D3Trees.children(D3TreeNode(t, 1))
-show(STDOUT, MIME("text/plain"), t)
+@show D3Trees.children(D3TreeNode(t1, 1))
+show(STDOUT, MIME("text/plain"), t1)
 
 nbinclude("../examples/hello.ipynb")
 
@@ -48,3 +48,7 @@ println("creating tree object")
 
 println("html string")
 @time stringmime(MIME("text/html"), t)
+
+println("AbstractTrees constructor")
+@time t3 = D3Tree(t1)
+@time t4 = D3Tree(t1, detect_repeat=false)
