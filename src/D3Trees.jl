@@ -115,7 +115,7 @@ struct D3TreeNode
 end
 
 AbstractTrees.children(n::D3TreeNode) = (D3TreeNode(n.tree, c) for c in n.tree.children[n.index])
-AbstractTrees.children(t::D3Tree) = children(D3TreeNode(t, c) for c in t.children[1])
+AbstractTrees.children(t::D3Tree) = children(D3TreeNode(t, 1))
 n_children(n::D3TreeNode) = length(n.tree.children[n.index])
 AbstractTrees.printnode(io::IO, n::D3TreeNode) = print(io, n.tree.text[n.index])
 
