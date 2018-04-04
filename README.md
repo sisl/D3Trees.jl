@@ -6,17 +6,23 @@
 
 Flexible interactive visualization for large trees using [D3.js](d3js.org).
 
+![Tree](img/tree.png)
+
 ## Installation
 
 ```julia
 Pkg.add("D3Trees")
 ```
-or
-```julia
-Pkg.clone("https://github.com/sisl/D3Trees.jl.git")
-```
 
 ## Usage
+
+There are two ways to create a D3Tree object described below:
+
+### With AbstractTrees
+
+Any object that implements the interface from AbstractTrees can given to the constructor: `D3Tree(object)`.
+
+### Without AbstractTrees
 
 The structure of a D3Tree is specified with *lists of children for each node* stored in a `Vector` of `Int` `Vector`s. For example
 ```julia
@@ -31,8 +37,7 @@ t = D3Tree(children)
 
 inchrome(t)
 ```
-By clicking on the nodes, you can expand it to look like this:
-![Tree](img/tree.png)
+By clicking on the nodes, you can expand it to look like the image at the top of the page.
 
 Optional arguments control other aspects of the style (use `julia> ?D3Tree` for a complete list), for example
 ```julia
@@ -80,3 +85,8 @@ julia> t = D3Tree(children)
 ## Browser compatibility
 
 This package works best in the Google chrome or chromium browser.
+
+## Limitations
+
+- The tree is currently transmitted to the browser in one big json string, so it can be slow for large trees and cannot handle infinite trees.
+- This will not work offline because it downloads the D3 library on the fly (https://github.com/sisl/D3Trees.jl/issues/10)
