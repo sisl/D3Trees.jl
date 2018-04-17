@@ -1,3 +1,4 @@
+__precompile__(true)
 module D3Trees
 
 using JSON
@@ -101,6 +102,7 @@ function push_node!(t, node, node_dict=nothing)
         iob = IOBuffer()
         printnode(iob, node)
         push!(t.text, String(take!(iob)))
+        push!(t.tooltip, String(take!(iob)))
     end
     for c in children(node)
         c_ind = push_node!(t, c, node_dict)
