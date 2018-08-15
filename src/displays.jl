@@ -11,7 +11,7 @@ function inchrome(t::D3Tree)
     open(fname, "w") do f
         show(f, MIME("text/html"), t)
     end
-    if is_windows()
+    if iswindows()
         run(`cmd /C start chrome "$fname"`)
     else
         run(`google-chrome $fname`)

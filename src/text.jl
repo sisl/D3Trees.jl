@@ -1,7 +1,7 @@
 function shownode(io::IO, node, depth::Int, item_prefix::String, prefix::String)
     buf = PipeBuffer()
     printnode(buf, node)
-    for (i, line) in enumerate(eachline(buf, chomp=false))
+    for (i, line) in enumerate(eachline(buf, keep=true))
         if i == 1
             print(io, item_prefix*line)
         else

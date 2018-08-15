@@ -1,7 +1,8 @@
 using D3Trees
 using JSON
-using Base.Test
+using Test
 using NBInclude
+using Base64
 
 children = [[2,3], [], [4], []]
 text = ["one\n(second line)", "2", "III", "four"]
@@ -32,9 +33,9 @@ t2 = D3Tree(children,
 # inchrome(t2)
 
 @show D3Trees.children(D3TreeNode(t1, 1))
-show(STDOUT, MIME("text/plain"), t1)
+show(stdout, MIME("text/plain"), t1)
 
-nbinclude("../examples/hello.ipynb")
+@nbinclude("../examples/hello.ipynb")
 
 n = 1_000_000
 println("generating $n children")
