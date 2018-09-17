@@ -36,6 +36,7 @@ children = [[2,3], [4,5], [6,7], [8,9], [1], [], [], [], []]
 t = D3Tree(children)
 
 inchrome(t)
+inbrowser(t, "firefox")
 ```
 By clicking on the nodes, you can expand it to look like the image at the top of the page.
 

@@ -13,7 +13,8 @@ export
     D3TreeView,
 
     blink,
-    inchrome
+    inchrome,
+    inbrowser
 
 struct D3Tree
     children::Vector{Vector{Int}}
