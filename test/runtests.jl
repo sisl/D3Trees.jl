@@ -29,8 +29,10 @@ t2 = D3Tree(children,
             svg_height=300
            )
 
-# inchrome(t)
+# inchrome(t1)
+# inbrowser(t1, "firefox")
 # inchrome(t2)
+# inbrowser(t2, "firefox")
 
 @show D3Trees.children(D3TreeNode(t1, 1))
 show(stdout, MIME("text/plain"), t1)
