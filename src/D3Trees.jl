@@ -11,6 +11,8 @@ export
     D3Tree,
     D3TreeNode,
     D3TreeView,
+    style,
+    link_style,
 
     blink,
     inchrome,
@@ -65,7 +67,7 @@ function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
 end
 
 """
-    D3Tree(node; detect_repeat=true)
+    D3Tree(node; detect_repeat=true; kwargs...)
 
 Construct a tree to be displayed using D3 in a browser or ipython notebook from any object that implements the AbstractTrees interface.
 
@@ -78,9 +80,13 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook from 
 ## Keyword
 
 - `detect_repeat`: if true, uses a dictionary to detect whether a node has appeared previously
+- Also supports the same keyword arguments as the D3Tree(children, <keyword arguments>) constructor
 """
-function D3Tree(node; detect_repeat::Bool=true)
-    t = D3Tree(Vector{Int}[])
+
+function D3Tree(node; detect_repeat::Bool=true, kwargs...)
+
+    t = D3Tree(Vector{Int}[]; kwargs...)
+
     if detect_repeat
         node_dict = Dict{Any, Int}()
         push_node!(t, node, node_dict)
@@ -106,10 +112,12 @@ function push_node!(t, node, node_dict=nothing)
         str = String(take!(iob))
         push!(t.text, str)
         push!(t.tooltip, str)
+        push!(t.style, style(node))
     end
     for c in children(node)
         c_ind = push_node!(t, c, node_dict)
         push!(t.children[ind], c_ind)
+        push!(t.link_style, link_style(node, c))
     end
     return ind
 end
@@ -123,6 +131,8 @@ AbstractTrees.children(n::D3TreeNode) = (D3TreeNode(n.tree, c) for c in n.tree.c
 AbstractTrees.children(t::D3Tree) = children(D3TreeNode(t, 1))
 n_children(n::D3TreeNode) = length(n.tree.children[n.index])
 AbstractTrees.printnode(io::IO, n::D3TreeNode) = print(io, n.tree.text[n.index])
+style(node)::String = ""
+link_style(node1, node2)::String = ""
 
 struct D3TreeView
     root::D3TreeNode
