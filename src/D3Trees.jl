@@ -113,11 +113,11 @@ function push_node!(t, node, node_dict=nothing)
         push!(t.text, str)
         push!(t.tooltip, str)
         push!(t.style, style(node))
+        push!(t.link_style, link_style(node))
     end
     for c in children(node)
         c_ind = push_node!(t, c, node_dict)
         push!(t.children[ind], c_ind)
-        push!(t.link_style, link_style(node, c))
     end
     return ind
 end
@@ -132,7 +132,7 @@ AbstractTrees.children(t::D3Tree) = children(D3TreeNode(t, 1))
 n_children(n::D3TreeNode) = length(n.tree.children[n.index])
 AbstractTrees.printnode(io::IO, n::D3TreeNode) = print(io, n.tree.text[n.index])
 style(node)::String = ""
-link_style(node1, node2)::String = ""
+link_style(node)::String = ""
 
 struct D3TreeView
     root::D3TreeNode
