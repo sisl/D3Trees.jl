@@ -20,7 +20,9 @@ There are two ways to create a D3Tree object described below:
 
 ### With AbstractTrees
 
-Any object that implements the interface from AbstractTrees can given to the constructor: `D3Tree(object)`.
+Any object that implements the interface from AbstractTrees can be given to the constructor: `D3Tree(object)`.
+
+See the docstring (`julia> ?D3Tree`) for information on how to control the style.
 
 ### Without AbstractTrees
 
