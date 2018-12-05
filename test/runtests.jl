@@ -55,3 +55,7 @@ println("html string")
 println("AbstractTrees constructor")
 @time t3 = D3Tree(t1)
 @time t4 = D3Tree(t1, detect_repeat=false)
+@test t3.text == t1.text
+@test t3.tooltip == t1.tooltip
+@test t3.style == t1.style
+@test t3.link_style == t1.link_style
