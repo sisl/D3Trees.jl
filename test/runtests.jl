@@ -59,3 +59,5 @@ println("AbstractTrees constructor")
 @test t3.tooltip == t1.tooltip
 @test t3.style == t1.style
 @test t3.link_style == t1.link_style
+
+inbrowser(D3Tree([[2],[]]), `ls`)
