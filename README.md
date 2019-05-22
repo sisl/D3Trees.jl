@@ -14,7 +14,7 @@ Flexible interactive visualization for large trees using [D3.js](d3js.org).
 Pkg.add("D3Trees")
 ```
 
-## Usage
+## Basic Usage
 
 There are two ways to create a D3Tree object described below:
 
@@ -32,6 +32,8 @@ D3Tree([[2,3], [], [4], []])
 ```
 creates a tree with four nodes. Nodes 2 and 3 are children of node 1, and node 4 is the only child of node 3. Nodes 2 and 4 are childless.
 
+## Displaying Trees
+
 In an IJulia notebook, the tree will automatically be displayed using D3.js. To get an interactive display in a chrome browser from the repl or a script, you can use the `inchrome` function. The `blink` function can also open it in a standalone window using the `Blink.jl` package.
 ```julia
 children = [[2,3], [4,5], [6,7], [8,9], [1], [], [], [], []]
@@ -41,6 +43,8 @@ inchrome(t)
 inbrowser(t, "firefox")
 ```
 By clicking on the nodes, you can expand it to look like the image at the top of the page.
+
+## Style Control
 
 Optional arguments control other aspects of the style (use `julia> ?D3Tree` for a complete list), for example
 ```julia
@@ -65,7 +69,7 @@ will yield
 
 or, see [examples/hello.ipynb](https://nbviewer.jupyter.org/github/sisl/D3Trees.jl/blob/master/examples/hello.ipynb)
 
-### Text output
+## Text output
 
 D3Trees also supports basic text output. This can be achieved by writing to an io object with the `text/plain` mime. This format is the automatic output if a D3Tree is created in the REPL:
 
