@@ -18,13 +18,13 @@ Pkg.add("D3Trees")
 
 There are two ways to create a D3Tree object described below:
 
-### With AbstractTrees
+### 1) With AbstractTrees
 
 Any object that implements the interface from AbstractTrees can be given to the constructor: `D3Tree(object)`.
 
 See the docstring (`julia> ?D3Tree`) for information on how to control the style.
 
-### Without AbstractTrees
+### 2) Without AbstractTrees
 
 The structure of a D3Tree is specified with *lists of children for each node* stored in a `Vector` of `Int` `Vector`s. For example
 ```julia
