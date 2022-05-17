@@ -19,3 +19,5 @@ test = ["Test", "NBInclude", "Base64"]
 
 [compat]
 julia = "1"
+AbstractTrees = "0.3"
+JSON = "0.20, 0.21"
