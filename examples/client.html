@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+
+    <!-- <script src="client.js"> </script> -->
+    <!-- <script src="../js/tree_vis.js">  -->
+    <script>
+    window.onload=function(){
+        const button = document.getElementById("myButton1");
+        const out = document.getElementById("myDisplay");
+        if(button){
+            button.addEventListener("click", doStuff, false);
+        }
+        function doStuff() {
+            out.innerHTML = "YES"
+        }
+    }
+        
+    </script>
+
+    <button type="button" id="myButton1">
+        Test!
+    </button>
+        
+    <!-- <button type="button" onclick="sendStuff()">
+        Send!
+    </button>
+    
+    <button type="button" onclick="closeSocket()">
+        Some stuff.
+    </button> -->
+    
+    <p id="myDisplay">
+        Initializing...
+    </p>
+
+    </body>
+</html>
