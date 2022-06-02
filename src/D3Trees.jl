@@ -155,12 +155,12 @@ struct D3TreeView
 end
 
 function push_node!(t, node, node_dict=nothing)
-    if !(node_dict == nothing) && haskey(node_dict, node)
+    if !(node_dict === nothing) && haskey(node_dict, node)
         return node_dict[node]
     end
 
     ind = length(t.children) + 1
-    if !(node_dict == nothing)
+    if !(node_dict === nothing)
         node_dict[node] = ind
     end
     if length(t.children) < ind
