@@ -1,4 +1,5 @@
-function shownode(io::IO, node, depth::Int, item_prefix::String, prefix::String)
+function shownode(io::IO, node::D3TreeNode, depth::Int, item_prefix::String, prefix::String)
+    # TODO: currently it does not not specify which node is unexpanded 
     buf = PipeBuffer()
     printnode(buf, node)
     for (i, line) in enumerate(eachline(buf, keep=true))
@@ -8,6 +9,7 @@ function shownode(io::IO, node, depth::Int, item_prefix::String, prefix::String)
             print(io, prefix*line)
         end
     end
+
     if depth <= 0
         println(io, " ($(n_children(node)) children)")
     else
