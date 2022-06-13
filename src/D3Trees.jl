@@ -10,20 +10,19 @@ import AbstractTrees: printnode
 export
     D3Tree,
     D3TreeNode,
-    D3TreeView,
-
-    blink,
+    D3TreeView, blink,
     inchrome,
     inbrowser
 
 struct D3Tree
     children::Vector{Vector{Int}}
+    unexpanded_children::Dict{Int,Any}
     text::Vector{String}
     tooltip::Vector{String}
     style::Vector{String}
     link_style::Vector{String}
     title::String
-    options::Dict{Symbol, Any}
+    options::Dict{Symbol,Any}
 end
 
 """
@@ -50,15 +49,15 @@ D3Trees.link_style(node)
 - `detect_repeat`: if true, uses a dictionary to detect whether a node has appeared previously
 - Also supports, the non-vector arguments of the vector-of-vectors `D3Tree` constructor, i.e. `title`, `init_expand`, `init_duration`, `svg_height`.
 """
-function D3Tree(node; detect_repeat::Bool=true, kwargs...)
+function D3Tree(node; detect_repeat::Bool=true, max_expand_depth=typemax(Int), kwargs...)
 
     t = D3Tree(Vector{Int}[]; kwargs...)
 
     if detect_repeat
-        node_dict = Dict{Any, Int}()
-        push_node!(t, node, node_dict)
+        node_dict = Dict{Any,Int}()
+        push_node(t, node, max_expand_depth, node_dict)
     else
-        push_node!(t, node)
+        push_node(t, node, max_expand_depth)
     end
     return t
 end
@@ -93,13 +92,14 @@ function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)
     n = length(children)
     return D3Tree(children,
-                  get(kwd, :text, collect(string(i) for i in 1:n)),
-                  get(kwd, :tooltip, fill("", n)),
-                  get(kwd, :style, fill("", n)),
-                  get(kwd, :link_style, fill("", n)),
-                  get(kwd, :title, "Julia D3Tree"),
-                  convert(Dict{Symbol, Any}, kwd)
-                 )
+        Dict(),
+        get(kwd, :text, collect(string(i) for i in 1:n)),
+        get(kwd, :tooltip, fill("", n)),
+        get(kwd, :style, fill("", n)),
+        get(kwd, :link_style, fill("", n)),
+        get(kwd, :title, "Julia D3Tree"),
+        convert(Dict{Symbol,Any}, kwd),
+    )
 end
 
 
@@ -154,7 +154,10 @@ struct D3TreeView
     depth::Int
 end
 
-function push_node!(t, node, node_dict=nothing)
+"""
+DFS add node to the D3Tree structure
+"""
+function push_node(t::D3Tree, node, max_expand_depth::Int, node_dict=nothing)
     if !(node_dict === nothing) && haskey(node_dict, node)
         return node_dict[node]
     end
@@ -163,18 +166,67 @@ function push_node!(t, node, node_dict=nothing)
     if !(node_dict === nothing)
         node_dict[node] = ind
     end
-    if length(t.children) < ind
-        push!(t.children, Int[])
-        push!(t.text, text(node))
-        push!(t.tooltip, tooltip(node))
-        push!(t.style, style(node))
-        push!(t.link_style, link_style(node))
-    end
-    for c in children(node)
-        c_ind = push_node!(t, c, node_dict)
-        push!(t.children[ind], c_ind)
+
+    push!(t.children, Int[])
+    push!(t.text, text(node))
+    push!(t.tooltip, tooltip(node))
+    push!(t.style, style(node))
+    push!(t.link_style, link_style(node))
+
+    if max_expand_depth > 0
+        for c in children(node)
+            c_ind = push_node(t, c, max_expand_depth - 1, node_dict)
+            push!(t.children[ind], c_ind)
+        end
+    else
+        t.unexpanded_children[ind] = node
     end
     return ind
+end
+
+struct D3OffsetSubtree
+    root_children::Vector{Int}
+    subtree::D3Tree
+    root_id::Int
+
+    function D3OffsetSubtree(root_id::Integer, subtree::D3Tree, offset::Integer)
+        offset_subtree_children::Vector{Vector{Int}} = [[ind + offset for ind in child_inds] for child_inds in subtree.children]
+        root_children = offset_subtree_children[1]
+        offset_subtree = D3Tree(
+            offset_subtree_children[2:end],
+            Dict(ind + offset => node for (ind, node) in pairs(subtree.unexpanded_children)),
+            subtree.text[2:end],
+            subtree.tooltip[2:end],
+            subtree.style[2:end],
+            subtree.link_style[2:end],
+            subtree.title,
+            subtree.options
+        )
+        new(root_id, root_children, offset_subtree)
+    end
+end
+
+function expand_node!(t::D3Tree, ind::Int, max_expand_depth::Int)
+    # TODO: missing handling of caching of repeated nodes
+    @assert haskey(t.unexpanded_children, ind) "Node at index $ind is already expanded!"
+    node = pop!(t.unexpanded_children, ind)
+
+    # TODO: also pass other options from t?
+    subtree = D3Tree(node; max_expand_depth=max_expand_depth)
+    offset = length(t.children) - 1
+
+    offset_subtree = D3OffsetSubtree(ind, subtree, offset)
+
+    t.children[ind] = offset_subtree.root_children
+
+    append!(t.children, offset_subtree.subtree.children)
+    merge!(t.unexpanded_children, offset_subtree.subtree.unexpanded_children)
+    append!(t.text, offset_subtree.subtree.text)
+    append!(t.tooltip, offset_subtree.subtree.tooltip)
+    append!(t.style, offset_subtree.subtree.style)
+    append!(t.link_style, offset_subtree.subtree.link_style)
+
+    return offset_subtree
 end
 
 
