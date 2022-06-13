@@ -5,6 +5,9 @@ using JSON
 using Random
 using AbstractTrees
 
+using Sockets
+using HTTP
+
 import AbstractTrees: printnode
 
 export

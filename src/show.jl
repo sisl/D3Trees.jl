@@ -26,6 +26,8 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
     css = read(joinpath(dirname(@__FILE__()), "..", "css", "tree_vis.css"), String)
     js = read(joinpath(dirname(@__FILE__()), "..", "js", "tree_vis.js"), String)
     div = "treevis$(randstring())"
+    port = 16369
+    ws_url = "ws://$(Sockets.localhost):$(port)"
 
     html_string = """
         <!DOCTYPE html>
@@ -47,6 +49,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
             var initExpand = $(get(t.options, :init_expand, 0))
             var initDuration = $(get(t.options, :init_duration, 750))
             var svgHeight = $(get(t.options, :svg_height, 600))
+            var ws_url = "$(ws_url)";
             $js
             })();
         </script>
