@@ -15,7 +15,7 @@ end
 
 
 @testset "expand node" begin
-    ldroot = TestTrees.LimitedDepthTree(1)
+    ldroot = TestTrees.LimitedDepthTree()
     t1 = D3Tree(ldroot, max_expand_depth=1)
     D3Trees.expand_node!(t1, 2, 1)
     D3Trees.expand_node!(t1, 3, 1)

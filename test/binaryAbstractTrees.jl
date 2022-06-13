@@ -10,16 +10,16 @@ Base.show(io::IO, n::BTNode) = print(io, "$(n.id) (d=$(bt_depth(n))) -> $(getfie
 
 
 """
-    LimitedDepthTree(id, leaf_depth)
+    LimitedDepthTree(id, max_leaf_depth)
 
-Create binary tree rooted at index with leave depth specified by the `leaf_depth` parameter.
-The AbstractTrees.children method does not expand the tree beyond the `leaf_depth`.
-Maximum `leaf_depth` is typemax(Int)
+Create binary tree rooted at index with leave depth specified by the `max_leaf_depth` parameter.
+The AbstractTrees.children method does not expand the tree beyond the `max_leaf_depth`.
+Maximum `max_leaf_depth` is typemax(Int)
 """
 
 struct LimitedDepthTree <: BTNode
     id::Int
-    leaf_depth::Int
+    max_leaf_depth::Int
 
     function LimitedDepthTree(id, leaf_depth)
         @assert id>0 "All notes must have id > 0, root has 1."
@@ -28,9 +28,9 @@ struct LimitedDepthTree <: BTNode
     end
 end
 
-LimitedDepthTree(id; leaf_depth=typemax(Int)) =  LimitedDepthTree(id, leaf_depth)
-expand(n::LimitedDepthTree) = bt_depth(n) < n.leaf_depth
-AbstractTrees.children(n::LimitedDepthTree) = expand(n) ? LimitedDepthTree.(bt_children_ids(n.id), n.leaf_depth) : LimitedDepthTree[]
+LimitedDepthTree(;root_id=1, max_leaf_depth=typemax(Int)) =  LimitedDepthTree(root_id, max_leaf_depth)
+expand(n::LimitedDepthTree) = bt_depth(n) < n.max_leaf_depth
+AbstractTrees.children(n::LimitedDepthTree) = expand(n) ? LimitedDepthTree.(bt_children_ids(n.id), n.max_leaf_depth) : LimitedDepthTree[]
 
 
 """
