@@ -84,29 +84,18 @@
             window.onload=function(){
             (function displayTree(){
                 var treeData = {
-                    "children": [[2, 5], [3, 4], [null], [], [6, 7], [], [], [], []],
-                    "text": ["1: d=0, [2, 3]", 
-                            "2: d=1, [4, 5]", 
-                            "4: d=2, [8, 9]", 
-                            "5: d=2, [10, 11]", 
-                            "3: d=1, [6, 7]", 
-                            "6: d=2, [12, 13]", 
-                            "7: d=2, [14, 15]", "8", "9"], 
-                    "tooltip": ["1: d=0, [2, 3]", 
-                                "2: d=1, [4, 5]", 
-                                "4: d=2, [8, 9]", 
-                                "5: d=2, [10, 11]", 
-                                "3: d=1, [6, 7]", 
-                                "6: d=2, [12, 13]", 
-                                "7: d=2, [14, 15]", "8", "9"],
-                    "style": ["", "", "", "", "", "", "", "", ""],
-                    "link_style": ["", "", "", "", "", "", "", "", ""],
+                    "children": [[1,4],[2,3],[],[],[5,6],[],[]],
+                    "unexpanded_children": new Set([3,5,6,2]),
+                    "text": ["1 (d=0) -> [2, 3]", "2 (d=1) -> [4, 5]", "4 (d=2) -> Int64[]", "5 (d=2) -> Int64[]", "3 (d=1) -> [6, 7]", "6 (d=2) -> Int64[]", "7 (d=2) -> Int64[]"], 
+                    "tooltip": ["1 (d=0) -> [2, 3]", "2 (d=1) -> [4, 5]", "4 (d=2) -> Int64[]", "5 (d=2) -> Int64[]", "3 (d=1) -> [6, 7]", "6 (d=2) -> Int64[]", "7 (d=2) -> Int64[]"],
+                    "style": ["", "", "", "", "", "", ""],
+                    "link_style": ["", "", "", "", "", "", ""],
                     "title": "Julia D3Tree",
                     "options": {}
                 }
                 var rootID = 0;
                 var div = "treevis1234";
-                var initExpand = 2
+                var initExpand = 1
                 var initDuration = 750
                 var svgHeight = 600
 
@@ -122,23 +111,11 @@
                 const button3 = document.getElementById("myButton3");
                 const out = document.getElementById("myDisplay");
                 button1.addEventListener("click", sendStuff, false);
-                button2.addEventListener("click", addNodes, false);
-                button3.addEventListener("click", removeNodes, false);
+                button2.addEventListener("click", addTreeData, false);
+                // button3.addEventListener("click", removeNodes, false);
 
                 function setDisplay(message) {
                     out.innerHTML=message;
-                }  
-
-                function addNodes(){
-                    treeData.children[2]=[8,9]
-                    console.log(treeData.children[3])
-                    // showTree()
-                }
-
-                function removeNodes(){
-                    treeData.children[2]=[]
-                    console.log(treeData.children[3])
-                    // showTree()
                 }   
 
                 // Connect
@@ -175,6 +152,48 @@
                     socket.send(JSON.stringify(obj));
                 }
 
+                function prepareSubtreeRequest(dataID){
+                    let request = new Object();
+                    request.tree_div_id = div
+                    request.subtree_root_id = dataID+1 // shift to 1-based indexing in Julia
+                    return JSON.stringify(request)
+                }
+
+
+                function fetchChildren(dataID){
+                    // Call websocket with current node id
+                    // Receive data regarding children
+
+                    request_json = prepareSubtreeRequest(dataID)
+
+                    console.log(request_json)
+
+                    mock_ws_responses = {
+                        2: "{\"children\":[[8,9],[],[],[11,12],[],[]],\"tooltip\":[\"8 (d=3) -> [16, 17]\",\"16 (d=4) -> [32, 33]\",\"17 (d=4) -> [34, 35]\",\"9 (d=3) -> [18, 19]\",\"18 (d=4) -> [36, 37]\",\"19 (d=4) -> [38, 39]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[12,9,8,11],\"text\":[\"8 (d=3) -> [16, 17]\",\"16 (d=4) -> [32, 33]\",\"17 (d=4) -> [34, 35]\",\"9 (d=3) -> [18, 19]\",\"18 (d=4) -> [36, 37]\",\"19 (d=4) -> [38, 39]\"],\"options\":{},\"root_children\":[7,10],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
+                        3: "{\"children\":[[14,15],[],[],[17,18],[],[]],\"tooltip\":[\"10 (d=3) -> [20, 21]\",\"20 (d=4) -> [40, 41]\",\"21 (d=4) -> [42, 43]\",\"11 (d=3) -> [22, 23]\",\"22 (d=4) -> [44, 45]\",\"23 (d=4) -> [46, 47]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[15,14,17,18],\"text\":[\"10 (d=3) -> [20, 21]\",\"20 (d=4) -> [40, 41]\",\"21 (d=4) -> [42, 43]\",\"11 (d=3) -> [22, 23]\",\"22 (d=4) -> [44, 45]\",\"23 (d=4) -> [46, 47]\"],\"options\":{},\"root_children\":[13,16],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
+                        5: "{\"children\":[[20,21],[],[],[23,24],[],[]],\"tooltip\":[\"12 (d=3) -> [24, 25]\",\"24 (d=4) -> [48, 49]\",\"25 (d=4) -> [50, 51]\",\"13 (d=3) -> [26, 27]\",\"26 (d=4) -> [52, 53]\",\"27 (d=4) -> [54, 55]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[21,20,24,23],\"text\":[\"12 (d=3) -> [24, 25]\",\"24 (d=4) -> [48, 49]\",\"25 (d=4) -> [50, 51]\",\"13 (d=3) -> [26, 27]\",\"26 (d=4) -> [52, 53]\",\"27 (d=4) -> [54, 55]\"],\"options\":{},\"root_children\":[19,22],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
+                        6: "{\"children\":[[26,27],[],[],[29,30],[],[]],\"tooltip\":[\"14 (d=3) -> [28, 29]\",\"28 (d=4) -> [56, 57]\",\"29 (d=4) -> [58, 59]\",\"15 (d=3) -> [30, 31]\",\"30 (d=4) -> [60, 61]\",\"31 (d=4) -> [62, 63]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[26,30,29,27],\"text\":[\"14 (d=3) -> [28, 29]\",\"28 (d=4) -> [56, 57]\",\"29 (d=4) -> [58, 59]\",\"15 (d=3) -> [30, 31]\",\"30 (d=4) -> [60, 61]\",\"31 (d=4) -> [62, 63]\"],\"options\":{},\"root_children\":[25,28],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
+                    }
+
+                    console.log(["Fetched mocked subtree, jid:", dataID])
+              
+                    return  JSON.parse(mock_ws_responses[dataID])
+                }
+
+                function addTreeData(dataID){
+                    st = fetchChildren(dataID)
+
+                    console.log(["Fetched mocked subtree", st])
+                    treeData.unexpanded_children.delete(dataID)
+
+                    treeData.children[dataID]=st.root_children
+                    treeData.children.push(...(st.children))
+                    treeData.unexpanded_children = new Set([...treeData.unexpanded_children, st.unexpanded_children])
+                    treeData.text.push(...st.text)
+                    treeData.tooltip.push(...st.tooltip)
+                    treeData.style.push(...st.style)
+                    treeData.link_style.push(...st.link_style)
+                }
 
                 //===================TREE STUFF=============================
 
@@ -263,21 +282,21 @@
                         return dnode;
                     }
 
-                    function areChildrenNotDownloaded(dataID){
-                        return (treeData.children[dataID].length==1) && (treeData.children[dataID][0] === null)
+                    function treeDataNotDownloaded(dataID){
+                        return treeData.unexpanded_children.has(dataID)
                     }
 
                     function initializeChildren(d, expandLevel) {
                         // create children
-                        if (areChildrenNotDownloaded(d.dataID)){
-                            console.log("Adding nodes!")
-                            addNodes()
+                        if (treeDataNotDownloaded(d.dataID)){
+                            console.log(["Adding nodes!", d.dataID])
+                            addTreeData(d.dataID)
                         }
                         var children = treeData.children[d.dataID];
                         d.children = [];
                         if (children) {
                             for (var i = 0; i < children.length; i++) {
-                                var cid = children[i] - 1;
+                                var cid = children[i];
                                 d.children.push(createDisplayNode(cid, expandLevel - 1));
                             }
                         }
@@ -328,6 +347,9 @@
                         tbox.each(function (d) {
                             var el = d3.select(this)
                             var text = treeData.text[d.dataID];
+                            //Debug thing
+                            text = '=' + d.dataID + '= ' + text
+                            //===
                             var lines = text.split('\n');
                             for (var i = 0; i < lines.length; i++) {
                                 var tspan = el.append("tspan").text(lines[i]);
@@ -406,8 +428,6 @@
                         } else {
                             initializeChildren(d, 1);
                         }
-                        // console.log(["Click: ", JSON.stringify(d)])
-                        console.log("Click")
                         update(d, 750);
                     }
 
