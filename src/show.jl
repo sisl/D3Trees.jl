@@ -1,3 +1,25 @@
+"""
+Convert datastructure to json, shift indeces to zero-indexing for use in javascript
+"""
+function JSON.json(t::D3Tree)
+    data = Dict(key => getfield(t, key) for key ∈ fieldnames(D3Tree))
+    data[:children] = [Int[ind - 1 for ind ∈ list] for list ∈ data[:children]]
+    data[:unexpanded_children] = Int[k - 1 for k ∈ keys(data[:unexpanded_children])]
+    return json(data)
+end
+
+"""
+Convert datastructure to json, shift indeces to zero-indexing for use in javascript
+"""
+function JSON.json(st::D3OffsetSubtree)
+    data = Dict(key => getfield(st.subtree, key) for key ∈ fieldnames(D3Tree))
+    data[:children] = [Int[ind - 1 for ind ∈ list] for list ∈ data[:children]]
+    data[:unexpanded_children] = Int[k - 1 for k ∈ keys(data[:unexpanded_children])]
+    data[:root_children] = Int[ind - 1 for ind ∈ st.root_children]
+    data[:root_id] = data[:root_id] - 1
+    return json(data)
+end
+
 function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
     tree_json = json(t)
     root_id = 1
@@ -44,6 +66,7 @@ end
 
 # fallback when only the repl is available
 function Base.show(io::IO, m::MIME"text/plain", t::D3Tree)
+    # TODO: handle tree expand depth here
     show(io, m, D3TreeView(D3TreeNode(t, 1), get(t.options, :init_expanded, false) ? typemax(Int) : 3))
 end
 Base.show(io::IO, m::MIME"text/plain", v::D3TreeView) = shownode(io, v.root, v.depth, "", "")
