@@ -43,7 +43,7 @@ var socket = new WebSocket(ws_url);
 
 // Connect
 socket.addEventListener('open', function (event) {
-    console.log(`[ws-open] connection established at ${url}`)
+    console.log(`[ws-open] connection established at ${ws_url}`)
     // socket.send('READY');
     // setDisplay("Open");
 });
@@ -104,14 +104,11 @@ function fetchChildren(dataID){
 
     request_json = prepareSubtreeRequest(dataID);
 
-    console.log(request_json);
+    console.log(["Sending request", request_json]);
 
-    mock_ws_responses = {
-        2: "{\"children\":[[8,9],[],[],[11,12],[],[]],\"tooltip\":[\"8 (d=3) -> [16, 17]\",\"16 (d=4) -> [32, 33]\",\"17 (d=4) -> [34, 35]\",\"9 (d=3) -> [18, 19]\",\"18 (d=4) -> [36, 37]\",\"19 (d=4) -> [38, 39]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[12,9,8,11],\"text\":[\"8 (d=3) -> [16, 17]\",\"16 (d=4) -> [32, 33]\",\"17 (d=4) -> [34, 35]\",\"9 (d=3) -> [18, 19]\",\"18 (d=4) -> [36, 37]\",\"19 (d=4) -> [38, 39]\"],\"options\":{},\"root_children\":[7,10],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
-        3: "{\"children\":[[14,15],[],[],[17,18],[],[]],\"tooltip\":[\"10 (d=3) -> [20, 21]\",\"20 (d=4) -> [40, 41]\",\"21 (d=4) -> [42, 43]\",\"11 (d=3) -> [22, 23]\",\"22 (d=4) -> [44, 45]\",\"23 (d=4) -> [46, 47]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[15,14,17,18],\"text\":[\"10 (d=3) -> [20, 21]\",\"20 (d=4) -> [40, 41]\",\"21 (d=4) -> [42, 43]\",\"11 (d=3) -> [22, 23]\",\"22 (d=4) -> [44, 45]\",\"23 (d=4) -> [46, 47]\"],\"options\":{},\"root_children\":[13,16],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
-        5: "{\"children\":[[20,21],[],[],[23,24],[],[]],\"tooltip\":[\"12 (d=3) -> [24, 25]\",\"24 (d=4) -> [48, 49]\",\"25 (d=4) -> [50, 51]\",\"13 (d=3) -> [26, 27]\",\"26 (d=4) -> [52, 53]\",\"27 (d=4) -> [54, 55]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[21,20,24,23],\"text\":[\"12 (d=3) -> [24, 25]\",\"24 (d=4) -> [48, 49]\",\"25 (d=4) -> [50, 51]\",\"13 (d=3) -> [26, 27]\",\"26 (d=4) -> [52, 53]\",\"27 (d=4) -> [54, 55]\"],\"options\":{},\"root_children\":[19,22],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
-        6: "{\"children\":[[26,27],[],[],[29,30],[],[]],\"tooltip\":[\"14 (d=3) -> [28, 29]\",\"28 (d=4) -> [56, 57]\",\"29 (d=4) -> [58, 59]\",\"15 (d=3) -> [30, 31]\",\"30 (d=4) -> [60, 61]\",\"31 (d=4) -> [62, 63]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[26,30,29,27],\"text\":[\"14 (d=3) -> [28, 29]\",\"28 (d=4) -> [56, 57]\",\"29 (d=4) -> [58, 59]\",\"15 (d=3) -> [30, 31]\",\"30 (d=4) -> [60, 61]\",\"31 (d=4) -> [62, 63]\"],\"options\":{},\"root_children\":[25,28],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
-    };
+    socket.send(request_json)
+
+    //?? Get response somehow??
 
     console.log(["Fetched mocked subtree, jid:", dataID]);
 
@@ -327,13 +324,15 @@ function showTree() {
 
     // Toggle children on click.
     function click(d) {
-      if (d.children) {
+        debugger;
+        if (d.children) {
         d._children = d.children;
         d.children = null;
       } else if (d._children) {
         d.children = d._children;
         d._children = null;
       } else {
+        window.naseFn()
         initializeChildren(d, 1);
       }
       update(d, 750);

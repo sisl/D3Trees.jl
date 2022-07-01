@@ -13,58 +13,80 @@ Convert datastructure to json, shift indeces to zero-indexing for use in javascr
 """
 function JSON.json(st::D3OffsetSubtree)
     data = Dict(key => getfield(st.subtree, key) for key ∈ fieldnames(D3Tree))
+    
+    data[:root_children] = Int[ind - 1 for ind ∈ st.root_children]
+    data[:root_id] = st.root_id - 1
+
     data[:children] = [Int[ind - 1 for ind ∈ list] for list ∈ data[:children]]
     data[:unexpanded_children] = Int[k - 1 for k ∈ keys(data[:unexpanded_children])]
-    data[:root_children] = Int[ind - 1 for ind ∈ st.root_children]
-    data[:root_id] = data[:root_id] - 1
     return json(data)
 end
 
+# close(server)
+# const PORT = 16370
+# const HOST = Sockets.localhost
+# const TREE_DATA = Dict{String, D3Tree}()
+SERVER = Ref{HTTP.Servers.Server}()
+
 function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
-    tree_json = json(t)
-    root_id = 1
-    css = read(joinpath(dirname(@__FILE__()), "..", "css", "tree_vis.css"), String)
-    js = read(joinpath(dirname(@__FILE__()), "..", "js", "tree_vis.js"), String)
-    div = "treevis$(randstring())"
-    port = 16369
-    ws_url = "ws://$(Sockets.localhost):$(port)"
+    try
+        tree_json = json(t)
+        root_id = 1
+        css = read(joinpath(dirname(@__FILE__()), "..", "css", "tree_vis.css"), String)
+        js = read(joinpath(dirname(@__FILE__()), "..", "js", "tree_vis.js"), String)
+        div = "treevis$(randstring())"
+        
+        # ====== Websocket stuff ======
+        if isassigned(SERVER) && isopen(SERVER[])
+            close(SERVER[])
+        end
 
-    html_string = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>$(t.title)</title>
-        </head>
-        <body>
-        <div id="$div">
-        <style>
-            $css
-        </style>
-        <script>
-           (function(){
-            var treeData = $tree_json;
-            var rootID = $root_id-1;
-            var div = "$div";
-            var initExpand = $(get(t.options, :init_expand, 0))
-            var initDuration = $(get(t.options, :init_duration, 750))
-            var svgHeight = $(get(t.options, :svg_height, 600))
-            var ws_url = "$(ws_url)";
-            $js
-            })();
-        </script>
-        <p class="d3twarn">
-        Attempting to display the tree. If the tree is large, this may take some time.
-        </p>
-        <p class="d3twarn">
-        Note: D3Trees.jl requires an internet connection. If no tree appears, please check your connection. To help fix this, please see <a href="https://github.com/sisl/D3Trees.jl/issues/10">this issue</a>. You may also diagnose errors with the javascript console (Ctrl-Shift-J in chrome).
-        </p>
-        </div>
-        </body>
-        </html>
-    """
+        PORT = 16370
+        HOST = Sockets.localhost
+        TREE_DATA = Dict{String, D3Tree}()
 
-    println(f,html_string)
+        SERVER[] = run_server(HOST, PORT, TREE_DATA, verbose=true)
+
+        html_string = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>$(t.title)</title>
+            </head>
+            <body>
+            <div id="$div">
+            <style>
+                $css
+            </style>
+            <script>
+            (function(){
+                var treeData = $tree_json;
+                var rootID = $root_id-1;
+                var div = "$div";
+                var initExpand = $(get(t.options, :init_expand, 0));
+                var initDuration = $(get(t.options, :init_duration, 750));
+                var svgHeight = $(get(t.options, :svg_height, 600));
+                var ws_url = "ws://$(HOST):$(PORT)";
+                $js
+                })();
+            </script>
+            <p class="d3twarn">
+            Attempting to display the tree. If the tree is large, this may take some time.
+            </p>
+            <p class="d3twarn">
+            Note: D3Trees.jl requires an internet connection. If no tree appears, please check your connection. To help fix this, please see <a href="https://github.com/sisl/D3Trees.jl/issues/10">this issue</a>. You may also diagnose errors with the javascript console (Ctrl-Shift-J in chrome).
+            </p>
+            </div>
+            </body>
+            </html>
+        """
+
+        println(f,html_string)
+    catch e
+        @error "Show error:" exception=(e,catch_backtrace())
+        rethrow(e)
+    end
 end
 
 # fallback when only the repl is available

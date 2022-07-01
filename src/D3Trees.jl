@@ -7,6 +7,7 @@ using AbstractTrees
 
 using Sockets
 using HTTP
+using HTTP.WebSockets
 
 import AbstractTrees: printnode
 
@@ -205,7 +206,7 @@ struct D3OffsetSubtree
             subtree.title,
             subtree.options
         )
-        new(root_id, root_children, offset_subtree)
+        new(root_children, offset_subtree, root_id)
     end
 end
 
@@ -232,7 +233,7 @@ function expand_node!(t::D3Tree, ind::Int, max_expand_depth::Int)
     return offset_subtree
 end
 
-
+include("server.jl")
 include("show.jl")
 include("displays.jl")
 include("text.jl")
