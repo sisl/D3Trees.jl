@@ -99,7 +99,7 @@ function mockFetchChildren(dataID){
     return  JSON.parse(mock_ws_responses[dataID]);
 }
 
-function fetchChildren(dataID){
+async function fetchSubtree(dataID){
     // Call websocket with current node id
     // Receive data regarding children
 
@@ -107,13 +107,23 @@ function fetchChildren(dataID){
 
     console.log(["Sending request", request_json]);
 
-    let response = await fetch(tree_url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8'
-        },
-        body: request_json
-      });
+    return  fetch(tree_url+div+"/"+(dataID+1), {
+        method: 'GET',
+        // mode : 'no-cors', # no-cors does not allow reading data
+        // headers: {
+        //   'Content-Type': 'application/json;charset=utf-8'
+        // },
+        // body: request_json
+      }).then(function(response){
+        console.log(["Got response: ", response])
+        return response
+       })
+      .then(response => response.json())
+      .then(json => JSON.parse(json))
+      .then(function(json){
+         console.log(["parsed something: ", json])
+         return json
+        });
 
     // let response = await fetch(tree_url);
 
@@ -124,22 +134,21 @@ function fetchChildren(dataID){
     // console.log(["Got data", data]);
 
     // return  data;
-    return response
+    // return response
 }
 
-function addTreeData(dataID){
-    st = fetchChildren(dataID);
+function addSubTreeData(subtree){
+    // debugger;
+    console.log(["Fetched subtree", subtree]);
+    treeData.unexpanded_children.delete(subtree.root_id);
 
-    console.log(["Fetched mocked subtree", st]);
-    treeData.unexpanded_children.delete(dataID);
-
-    treeData.children[dataID]=st.root_children;
-    treeData.children.push(...(st.children));
-    treeData.unexpanded_children = new Set([...treeData.unexpanded_children, st.unexpanded_children]);
-    treeData.text.push(...st.text);
-    treeData.tooltip.push(...st.tooltip);
-    treeData.style.push(...st.style);
-    treeData.link_style.push(...st.link_style);
+    treeData.children[subtree.root_id]=subtree.root_children;
+    treeData.children.push(...(subtree.children));
+    treeData.unexpanded_children = new Set([...treeData.unexpanded_children, ...subtree.unexpanded_children]);
+    treeData.text.push(...subtree.text);
+    treeData.tooltip.push(...subtree.tooltip);
+    treeData.style.push(...subtree.style);
+    treeData.link_style.push(...subtree.link_style);
 }
 
 // ==== Showing trees ====
@@ -202,12 +211,6 @@ function showTree() {
     }
 
     function initializeChildren(d, expandLevel) {
-        // fetch missing children
-        if (treeDataNotDownloaded(d.dataID)) {
-            console.log(["Adding nodes!", d.dataID]);
-            addTreeData(d.dataID);
-        }
-      
       // create children
       var children = treeData.children[d.dataID];
       d.children = [];
@@ -336,18 +339,32 @@ function showTree() {
 
     // Toggle children on click.
     function click(d) {
-        // debugger;
         if (d.children) {
-        d._children = d.children;
-        d.children = null;
-      } else if (d._children) {
-        d.children = d._children;
-        d._children = null;
-      } else {
-        // window.naseFn()
-        initializeChildren(d, 1);
-      }
-      update(d, 750);
+            d._children = d.children;
+            d.children = null;
+            update(d, 750);
+        } else if (d._children) {
+            d.children = d._children;
+            d._children = null;
+            update(d, 750);
+        } else {
+            // window.naseFn()
+            // initializeChildren(d, 1);
+            // fetch missing children
+            if (treeDataNotDownloaded(d.dataID)) {
+                console.log(["Adding nodes!", d.dataID]);
+                fetchSubtree(d.dataID)
+                .then(subtree => addSubTreeData(subtree))
+                .then(function(){
+                    initializeChildren(d, 1);
+                    update(d, 750);
+                });
+            } else {
+                initializeChildren(d, 1);
+                update(d, 750);
+            }
+        }
+    //   update(d, 750);
     }
 
 }
