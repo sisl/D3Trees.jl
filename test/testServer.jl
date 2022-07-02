@@ -1,10 +1,7 @@
-# import Pkg;
-# Pkg.activate("test");
-# using Debugger
+
 using D3Trees
 using JSON
 using Test
-# using NBInclude
 using Base64
 using AbstractTrees
 using HTTP
