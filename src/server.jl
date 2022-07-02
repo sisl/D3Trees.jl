@@ -63,24 +63,22 @@ function process_node_expand_request(tree_data::Dict{String, D3Tree}, request::D
 end
 
 function run_server(host, port, tree_data; verbose=false)
-    server = HTTP.WebSockets.listen!(host, port; verbose=verbose) do ws
-        for msg in ws
-            let request, response
-                try
-                    request = JSON.parse(msg)
-                catch e
-                    @error "[SERVER] Request could not be parsed as JSON: '$msg'"
-                    continue
-                end
-                try
-                    response = process_node_expand_request(tree_data, request, 2)
-                catch e
-                    @error "[SERVER] Trouble processing request:" (e, catch_backtrace())
-                    continue
-                end
-                # TODO: If there was an error, I should send a message to the GUI to let the user know
-                send(ws, response)
+    server = HTTP.serve!(host, port; verbose=verbose) do request
+        let payload, response
+            try
+                payload = JSON.parse(String(request.body))
+            catch e
+                @error "[SERVER] Request body could not be parsed as JSON: '$(request.body)'"
+                throw(e)
             end
+            try
+                response = process_node_expand_request(tree_data, payload, 2)
+            catch e
+                @error "[SERVER] Trouble processing request:" (e, catch_backtrace())
+                throw(e)
+            end
+            # TODO: If there was an error, I should send a message to the GUI to let the user know
+            return HTTP.Response(200, response)
         end
     end
     return server

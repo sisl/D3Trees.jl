@@ -35,46 +35,47 @@ function prepareSubtreeRequest(dataID){
     let request = new Object();
     request.tree_div_id = div;
     request.subtree_root_id = dataID+1; // shift to 1-based indexing in Julia
+    console.log(JSON.stringify(request))
     return JSON.stringify(request);
 }
 
 // ======== Websocket code
-var socket = new WebSocket(ws_url);
+// var socket = new WebSocket(ws_url);
 
 // Connect
-socket.addEventListener('open', function (event) {
-    console.log(`[ws-open] connection established at ${ws_url}`)
-    // socket.send('READY');
-    // setDisplay("Open");
-});
+// socket.addEventListener('open', function (event) {
+//     console.log(`[ws-open] connection established at ${ws_url}`)
+//     // socket.send('READY');
+//     // setDisplay("Open");
+// });
 
-// Handle server messages
-socket.addEventListener('message', function (event) {
-    console.log(`[ws-message] received ${event.data}`)
-    // alert(['Message from server ', event.data]);
-    // i++;
-    // setDisplay(['Message from server: ',i, ' - ',  event.data]);
-});
+// // Handle server messages
+// socket.addEventListener('message', function (event) {
+//     console.log(`[ws-message] received ${event.data}`)
+//     // alert(['Message from server ', event.data]);
+//     // i++;
+//     // setDisplay(['Message from server: ',i, ' - ',  event.data]);
+// });
 
-// Handle server close
-socket.addEventListener('close', function (event) {
-    // alert(['Message from server ', event.data]);
-    // setDisplay(['Connection to server CLOSED: ',i, ' - ',  event.data]);
-    if (event.wasClean) {
-        console.log(`[ws-close] connection closed cleanly, code=${event.code} reason=${event.reason}`);
-      } else {
-        // e.g. server process killed or network down
-        // event.code is usually 1006 in this case
-        console.log('[ws-close] connection died');
-      }
-});
-
-// Handle server error
-socket.addEventListener('error', function (event) {
-    // alert(['Message from server ', event.data]);
-    // setDisplay(['Connection to server ERRORED: ',i, ' - ',  event.data]);
-    alert(`[ws-error] ${error.message}`);
-});
+// // Handle server close
+// socket.addEventListener('close', function (event) {
+//     // alert(['Message from server ', event.data]);
+//     // setDisplay(['Connection to server CLOSED: ',i, ' - ',  event.data]);
+//     if (event.wasClean) {
+//         console.log(`[ws-close] connection closed cleanly, code=${event.code} reason=${event.reason}`);
+//       } else {
+//         // e.g. server process killed or network down
+//         // event.code is usually 1006 in this case
+//         console.log('[ws-close] connection died');
+//       }
+// });
+// 
+// // Handle server error
+// socket.addEventListener('error', function (event) {
+//     // alert(['Message from server ', event.data]);
+//     // setDisplay(['Connection to server ERRORED: ',i, ' - ',  event.data]);
+//     alert(`[ws-error] ${error.message}`);
+// });
 
 
 // ======== Fetching subtree data
@@ -93,7 +94,7 @@ function mockFetchChildren(dataID){
         6: "{\"children\":[[26,27],[],[],[29,30],[],[]],\"tooltip\":[\"14 (d=3) -> [28, 29]\",\"28 (d=4) -> [56, 57]\",\"29 (d=4) -> [58, 59]\",\"15 (d=3) -> [30, 31]\",\"30 (d=4) -> [60, 61]\",\"31 (d=4) -> [62, 63]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[26,30,29,27],\"text\":[\"14 (d=3) -> [28, 29]\",\"28 (d=4) -> [56, 57]\",\"29 (d=4) -> [58, 59]\",\"15 (d=3) -> [30, 31]\",\"30 (d=4) -> [60, 61]\",\"31 (d=4) -> [62, 63]\"],\"options\":{},\"root_children\":[25,28],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
     };
 
-    console.log(["Fetched mocked subtree, jid:", dataID]);
+    console.log(["Fetched MOCKED subtree, jid:", dataID]);
 
     return  JSON.parse(mock_ws_responses[dataID]);
 }
@@ -106,13 +107,24 @@ function fetchChildren(dataID){
 
     console.log(["Sending request", request_json]);
 
-    socket.send(request_json)
+    let response = await fetch(tree_url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: request_json
+      });
 
-    //?? Get response somehow??
+    // let response = await fetch(tree_url);
 
-    console.log(["Fetched mocked subtree, jid:", dataID]);
+    // console.log(["Got response", response]);
 
-    return  JSON.parse(mock_ws_responses[dataID]);
+    // let data = response.json();
+
+    // console.log(["Got data", data]);
+
+    // return  data;
+    return response
 }
 
 function addTreeData(dataID){
@@ -324,7 +336,7 @@ function showTree() {
 
     // Toggle children on click.
     function click(d) {
-        debugger;
+        // debugger;
         if (d.children) {
         d._children = d.children;
         d.children = null;
@@ -332,7 +344,7 @@ function showTree() {
         d.children = d._children;
         d._children = null;
       } else {
-        window.naseFn()
+        // window.naseFn()
         initializeChildren(d, 1);
       }
       update(d, 750);
