@@ -26,7 +26,7 @@ end
 # const PORT = 16370
 # const HOST = Sockets.localhost
 # const TREE_DATA = Dict{String, D3Tree}()
-SERVER = Ref{HTTP.Servers.Server}()
+# SERVER = Ref{HTTP.Servers.Server}()
 
 function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
     try
@@ -41,11 +41,16 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
             close(SERVER[])
         end
 
-        PORT = 16370
-        HOST = Sockets.localhost
-        TREE_DATA = Dict{String, D3Tree}()
+        # PORT = 16370
+        # HOST = Sockets.localhost
+        TREE_DATA[div]=t
 
-        SERVER[] = run_server(HOST, PORT, TREE_DATA, verbose=true)
+        TREE_ROUTER = HTTP.Router() # make it const
+        HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/tree/{treediv}/{nodeid}", D3Trees.handle_subtree_request)
+        # HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/test/{val}/{val2}", handle_test)
+
+
+        SERVER[] = HTTP.serve!(TREE_ROUTER |> JSONMiddleware |> CorsMiddleware, HOST, PORT)
 
         html_string = """
             <!DOCTYPE html>
@@ -67,7 +72,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
                 var initExpand = $(get(t.options, :init_expand, 0));
                 var initDuration = $(get(t.options, :init_duration, 750));
                 var svgHeight = $(get(t.options, :svg_height, 600));
-                var ws_url = "ws://$(HOST):$(PORT)";
+                var tree_url = "http://localhost:$(PORT)/api/d3trees/v1/tree/";
                 $js
                 })();
             </script>
