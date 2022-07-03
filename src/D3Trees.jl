@@ -59,9 +59,9 @@ function D3Tree(node; detect_repeat::Bool=true, max_expand_depth=typemax(Int), k
 
     if detect_repeat
         node_dict = Dict{Any,Int}()
-        push_node(t, node, max_expand_depth, node_dict)
+        push_node!(t, node, max_expand_depth, node_dict)
     else
-        push_node(t, node, max_expand_depth)
+        push_node!(t, node, max_expand_depth)
     end
     return t
 end
@@ -161,7 +161,7 @@ end
 """
 DFS add node to the D3Tree structure
 """
-function push_node(t::D3Tree, node, max_expand_depth::Int, node_dict=nothing)
+function push_node!(t::D3Tree, node, max_expand_depth::Int, node_dict=nothing)
     if !(node_dict === nothing) && haskey(node_dict, node)
         return node_dict[node]
     end
@@ -179,7 +179,7 @@ function push_node(t::D3Tree, node, max_expand_depth::Int, node_dict=nothing)
 
     if max_expand_depth > 0
         for c in children(node)
-            c_ind = push_node(t, c, max_expand_depth - 1, node_dict)
+            c_ind = push_node!(t, c, max_expand_depth - 1, node_dict)
             push!(t.children[ind], c_ind)
         end
     else
