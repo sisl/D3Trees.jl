@@ -1,13 +1,12 @@
 module D3Trees
 
 using JSON
-#using Blink
+#using Blink - not yet compatible with HTTP.jl v1
 using Random
 using AbstractTrees
 
 using Sockets
 using HTTP
-using HTTP.WebSockets
 
 import AbstractTrees: printnode
 
@@ -32,7 +31,7 @@ end
 """
     D3Tree(node; detect_repeat=true, kwargs...)
 
-Construct a tree to be displayed using D3 in a browser or ipython notebook with any object, `node`, that implements the AbstractTrees interface.
+Construct a tree to be displayed using D3 in a browser or ipython notebook with any object, `node`, that implements the AbstractTrees interface. 
 
 The style may be controlled by implementing the following functions, which should return `String`s for the nodes:
 ```@docs
@@ -41,6 +40,10 @@ D3Trees.tooltip(node)
 D3Trees.style(node)
 D3Trees.link_style(node)
 ```
+
+Allows for lazy loading of large trees through the `max_expand_depth` keyword argument, which sets the depth to which nodes are expanded. When visualizing a tree with unexpanded nodes, julia server is started to expand them on demand and serve them to the D3 visualizaion. 
+    
+The server does not have information about the lifetime of different visualizations so it might keep references to past visualizations, potentially holding up a lot of memory. To reset the server and remove references to old data, run `D3Trees.reset_server()` to reset everythingh manually.
 
 # Arguments
 
@@ -51,9 +54,10 @@ D3Trees.link_style(node)
 ## Keyword
 
 - `detect_repeat`: if true, uses a dictionary to detect whether a node has appeared previously
+- `max_expand_depth::Integer`: default typemax(Int). Sets tree depth to at which `AbstractTrees.children(node)` will not be called anymore. Instead, nodes at this depth are cached and `children(node)` is called only when node is clicked in the D3 interactive visualization. Root has depth 0, so setting `max_expand_depth=1` expands only the root.
 - Also supports, the non-vector arguments of the vector-of-vectors `D3Tree` constructor, i.e. `title`, `init_expand`, `init_duration`, `svg_height`.
 """
-function D3Tree(node; detect_repeat::Bool=true, max_expand_depth=typemax(Int), kwargs...)
+function D3Tree(node; detect_repeat::Bool=true, max_expand_depth::Integer=typemax(Int), kwargs...)
 
     t = D3Tree(Vector{Int}[]; kwargs...)
 
@@ -91,6 +95,8 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
 - `init_expand::Integer` - levels to expand initially.
 - `init_duration::Number` - duration of the initial animation in ms.
 - `svg_height::Number` - height of the svg containing the tree in px.
+- `lazy_subtree_depth` - (default: 2) sets depth of subtrees fetched from D3Trees server
+- `dry_run_lazy_vizualization` - (default: true) if true, when starting the visualization, the server methods are ran once on a deepcopy of the tree to speed up first fetch in the visualization. Disable if the initial tree is large or subtrees are slow to compute.
 """
 function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)
@@ -188,6 +194,10 @@ function push_node!(t::D3Tree, node, max_expand_depth::Int, node_dict=nothing)
     return ind
 end
 
+
+"""
+Subtree structure for use by the lazy fetching of data through the D3Trees server. Offset so that they can be easily entered into the `children` structure of D3Tree.
+"""
 struct D3OffsetSubtree
     root_children::Vector{Int}
     subtree::D3Tree
@@ -210,6 +220,9 @@ struct D3OffsetSubtree
     end
 end
 
+"""
+Calculate missing children, for use with the D3Trees server for lazyly fetching data.
+"""
 function expand_node!(t::D3Tree, ind::Int, max_expand_depth::Int)
     # TODO: missing handling of caching of repeated nodes
     @assert haskey(t.unexpanded_children, ind) "Node at index $ind is already expanded!"

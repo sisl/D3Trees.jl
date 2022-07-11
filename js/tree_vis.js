@@ -30,116 +30,24 @@ function loadScript(url, callback)
     head.appendChild(script);
 }
 
-
-function prepareSubtreeRequest(dataID){
-    let request = new Object();
-    request.tree_div_id = div;
-    request.subtree_root_id = dataID+1; // shift to 1-based indexing in Julia
-    console.log(JSON.stringify(request))
-    return JSON.stringify(request);
-}
-
-// ======== Websocket code
-// var socket = new WebSocket(ws_url);
-
-// Connect
-// socket.addEventListener('open', function (event) {
-//     console.log(`[ws-open] connection established at ${ws_url}`)
-//     // socket.send('READY');
-//     // setDisplay("Open");
-// });
-
-// // Handle server messages
-// socket.addEventListener('message', function (event) {
-//     console.log(`[ws-message] received ${event.data}`)
-//     // alert(['Message from server ', event.data]);
-//     // i++;
-//     // setDisplay(['Message from server: ',i, ' - ',  event.data]);
-// });
-
-// // Handle server close
-// socket.addEventListener('close', function (event) {
-//     // alert(['Message from server ', event.data]);
-//     // setDisplay(['Connection to server CLOSED: ',i, ' - ',  event.data]);
-//     if (event.wasClean) {
-//         console.log(`[ws-close] connection closed cleanly, code=${event.code} reason=${event.reason}`);
-//       } else {
-//         // e.g. server process killed or network down
-//         // event.code is usually 1006 in this case
-//         console.log('[ws-close] connection died');
-//       }
-// });
-// 
-// // Handle server error
-// socket.addEventListener('error', function (event) {
-//     // alert(['Message from server ', event.data]);
-//     // setDisplay(['Connection to server ERRORED: ',i, ' - ',  event.data]);
-//     alert(`[ws-error] ${error.message}`);
-// });
-
-
 // ======== Fetching subtree data
-function mockFetchChildren(dataID){
-    // Call websocket with current node id
-    // Receive data regarding children
-
-    request_json = prepareSubtreeRequest(dataID);
-
-    console.log(request_json);
-
-    mock_ws_responses = {
-        2: "{\"children\":[[8,9],[],[],[11,12],[],[]],\"tooltip\":[\"8 (d=3) -> [16, 17]\",\"16 (d=4) -> [32, 33]\",\"17 (d=4) -> [34, 35]\",\"9 (d=3) -> [18, 19]\",\"18 (d=4) -> [36, 37]\",\"19 (d=4) -> [38, 39]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[12,9,8,11],\"text\":[\"8 (d=3) -> [16, 17]\",\"16 (d=4) -> [32, 33]\",\"17 (d=4) -> [34, 35]\",\"9 (d=3) -> [18, 19]\",\"18 (d=4) -> [36, 37]\",\"19 (d=4) -> [38, 39]\"],\"options\":{},\"root_children\":[7,10],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
-        3: "{\"children\":[[14,15],[],[],[17,18],[],[]],\"tooltip\":[\"10 (d=3) -> [20, 21]\",\"20 (d=4) -> [40, 41]\",\"21 (d=4) -> [42, 43]\",\"11 (d=3) -> [22, 23]\",\"22 (d=4) -> [44, 45]\",\"23 (d=4) -> [46, 47]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[15,14,17,18],\"text\":[\"10 (d=3) -> [20, 21]\",\"20 (d=4) -> [40, 41]\",\"21 (d=4) -> [42, 43]\",\"11 (d=3) -> [22, 23]\",\"22 (d=4) -> [44, 45]\",\"23 (d=4) -> [46, 47]\"],\"options\":{},\"root_children\":[13,16],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
-        5: "{\"children\":[[20,21],[],[],[23,24],[],[]],\"tooltip\":[\"12 (d=3) -> [24, 25]\",\"24 (d=4) -> [48, 49]\",\"25 (d=4) -> [50, 51]\",\"13 (d=3) -> [26, 27]\",\"26 (d=4) -> [52, 53]\",\"27 (d=4) -> [54, 55]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[21,20,24,23],\"text\":[\"12 (d=3) -> [24, 25]\",\"24 (d=4) -> [48, 49]\",\"25 (d=4) -> [50, 51]\",\"13 (d=3) -> [26, 27]\",\"26 (d=4) -> [52, 53]\",\"27 (d=4) -> [54, 55]\"],\"options\":{},\"root_children\":[19,22],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
-        6: "{\"children\":[[26,27],[],[],[29,30],[],[]],\"tooltip\":[\"14 (d=3) -> [28, 29]\",\"28 (d=4) -> [56, 57]\",\"29 (d=4) -> [58, 59]\",\"15 (d=3) -> [30, 31]\",\"30 (d=4) -> [60, 61]\",\"31 (d=4) -> [62, 63]\"],\"link_style\":[\"\",\"\",\"\",\"\",\"\",\"\"],\"title\":\"Julia D3Tree\",\"unexpanded_children\":[26,30,29,27],\"text\":[\"14 (d=3) -> [28, 29]\",\"28 (d=4) -> [56, 57]\",\"29 (d=4) -> [58, 59]\",\"15 (d=3) -> [30, 31]\",\"30 (d=4) -> [60, 61]\",\"31 (d=4) -> [62, 63]\"],\"options\":{},\"root_children\":[25,28],\"style\":[\"\",\"\",\"\",\"\",\"\",\"\"]}",
-    };
-
-    console.log(["Fetched MOCKED subtree, jid:", dataID]);
-
-    return  JSON.parse(mock_ws_responses[dataID]);
-}
-
 async function fetchSubtree(dataID){
-    // Call websocket with current node id
-    // Receive data regarding children
-
-    request_json = prepareSubtreeRequest(dataID);
-
-    console.log(["Sending request", request_json]);
+    console.log({msg:"Sending request to D3Trees.jl server", dataID:dataID});
 
     return  fetch(tree_url+div+"/"+(dataID+1), {
         method: 'GET',
-        // mode : 'no-cors', # no-cors does not allow reading data
-        // headers: {
-        //   'Content-Type': 'application/json;charset=utf-8'
-        // },
-        // body: request_json
       }).then(function(response){
-        console.log(["Got response: ", response])
+        console.log({msg:"Got response from D3Trees.jl server", dataID:dataID, response:response})
         return response
        })
       .then(response => response.json())
       .then(json => JSON.parse(json))
       .then(function(json){
-         console.log(["parsed something: ", json])
          return json
         });
-
-    // let response = await fetch(tree_url);
-
-    // console.log(["Got response", response]);
-
-    // let data = response.json();
-
-    // console.log(["Got data", data]);
-
-    // return  data;
-    // return response
 }
 
 function addSubTreeData(subtree){
-    // debugger;
-    console.log(["Fetched subtree", subtree]);
     treeData.unexpanded_children.delete(subtree.root_id);
 
     treeData.children[subtree.root_id]=subtree.root_children;
@@ -152,7 +60,6 @@ function addSubTreeData(subtree){
 }
 
 // ==== Showing trees ====
-
 function showTree() {
     treeData.unexpanded_children = new Set(treeData.unexpanded_children);
         
@@ -204,10 +111,6 @@ function showTree() {
         initializeChildren(dnode, expandLevel);
       }
       return dnode;
-    }
-
-    function treeDataNotDownloaded(dataID){
-        return treeData.unexpanded_children.has(dataID);
     }
 
     function initializeChildren(d, expandLevel) {
@@ -267,8 +170,8 @@ function showTree() {
       tbox.each( function(d) {
           var el = d3.select(this)
           var text = treeData.text[d.dataID];
-          //=== Debug helper
-          text = '=' + d.dataID + '= ' + text;
+          //=== Debug helper - display visualization data ID as part of message
+          //   text = '=' + d.dataID + '= ' + text;
           //===
           var lines = text.split('\n');
           for (var i = 0; i < lines.length; i++) {
@@ -337,7 +240,7 @@ function showTree() {
       });
     }
 
-    // Toggle children on click.
+    // Toggle children on click, fetch from Julia server if necessary
     function click(d) {
         if (d.children) {
             d._children = d.children;
@@ -347,24 +250,15 @@ function showTree() {
             d.children = d._children;
             d._children = null;
             update(d, 750);
+        } else if(treeData.unexpanded_children.has(d.dataID)) {
+            fetchSubtree(d.dataID)
+            .then(subtree => addSubTreeData(subtree))
+            .then(() => initializeChildren(d, 1))
+            .then(() => update(d, 750))
         } else {
-            // window.naseFn()
-            // initializeChildren(d, 1);
-            // fetch missing children
-            if (treeDataNotDownloaded(d.dataID)) {
-                console.log(["Adding nodes!", d.dataID]);
-                fetchSubtree(d.dataID)
-                .then(subtree => addSubTreeData(subtree))
-                .then(function(){
-                    initializeChildren(d, 1);
-                    update(d, 750);
-                });
-            } else {
-                initializeChildren(d, 1);
-                update(d, 750);
-            }
+            initializeChildren(d, 1);
+            update(d, 750);
         }
-    //   update(d, 750);
     }
 
 }

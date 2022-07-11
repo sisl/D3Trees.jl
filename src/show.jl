@@ -22,12 +22,6 @@ function JSON.json(st::D3OffsetSubtree)
     return json(data)
 end
 
-# close(server)
-# const PORT = 16370
-# const HOST = Sockets.localhost
-# const TREE_DATA = Dict{String, D3Tree}()
-# SERVER = Ref{HTTP.Servers.Server}()
-
 function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
     try
         tree_json = json(t)
@@ -36,21 +30,21 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
         js = read(joinpath(dirname(@__FILE__()), "..", "js", "tree_vis.js"), String)
         div = "treevis$(randstring())"
         
-        # ====== Websocket stuff ======
-        if isassigned(SERVER) && isopen(SERVER[])
-            close(SERVER[])
+
+        # do not bother with server if tree has no unexpanded nodes.
+        if length(t.unexpanded_children) > 0 
+            # if server has not been started yet, do so.
+            if !isassigned(SERVER) 
+                reset_server()
+                # speedup first-click response in the visualization
+                get(t.options, :dry_run_lazy_vizualization, true) ? dry_run_server(t) : nothing
+            end
+            
+            TREE_DATA[][div]=t
+            lazy_subtree_depth = get(t.options, :lazy_subtree_depth, DEFAULT_LAZY_SUBTREE_DEPTH)
+            HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/tree/{treediv}/{nodeid}", req -> D3Trees.handle_subtree_request(req, TREE_DATA[], lazy_subtree_depth))
         end
 
-        # PORT = 16370
-        # HOST = Sockets.localhost
-        TREE_DATA[div]=t
-
-        TREE_ROUTER = HTTP.Router() # make it const
-        HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/tree/{treediv}/{nodeid}", D3Trees.handle_subtree_request)
-        # HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/test/{val}/{val2}", handle_test)
-
-
-        SERVER[] = HTTP.serve!(TREE_ROUTER |> JSONMiddleware |> CorsMiddleware, HOST, PORT)
 
         html_string = """
             <!DOCTYPE html>
@@ -72,7 +66,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
                 var initExpand = $(get(t.options, :init_expand, 0));
                 var initDuration = $(get(t.options, :init_duration, 750));
                 var svgHeight = $(get(t.options, :svg_height, 600));
-                var tree_url = "http://localhost:$(PORT)/api/d3trees/v1/tree/";
+                var tree_url = "$TREE_URL";
                 $js
                 })();
             </script>
