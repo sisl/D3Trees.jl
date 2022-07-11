@@ -1,17 +1,5 @@
-using D3Trees
-using JSON
-using Test
-using Base64
-using AbstractTrees
-
-module TestTrees
-using AbstractTrees
-    include("binaryAbstractTrees.jl")
-end
-
-
 @testset "expand node" begin
-    ldroot = TestTrees.LimitedDepthTree()
+    ldroot = LimitedDepthTree()
     t1 = D3Tree(ldroot, max_expand_depth=1)
     D3Trees.expand_node!(t1, 2, 1)
     D3Trees.expand_node!(t1, 3, 1)

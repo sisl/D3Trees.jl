@@ -6,7 +6,7 @@ abstract type BTNode end
 bt_depth(id::Int) = floor(UInt, log2(id))
 bt_children_ids(id::Int) = [2*id, 2*id+1]
 bt_depth(n::BTNode) = bt_depth(n.id)
-Base.show(io::IO, n::BTNode) = print(io, "$(n.id) (d=$(bt_depth(n))) -> $(getfield.(children(n), :id))")
+Base.show(io::IO, n::BTNode) = print(io, "$(n.id) (d=$(bt_depth(n))) -> $(getfield.(AbstractTrees.children(n), :id))")
 
 
 """

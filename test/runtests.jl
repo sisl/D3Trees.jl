@@ -5,6 +5,7 @@ using NBInclude
 using Base64
 using AbstractTrees
 
+include("binaryAbstractTrees.jl")
 
 @testset "simple tree" begin
     children = [[2,3], [], [4], []]
@@ -66,6 +67,6 @@ using AbstractTrees
     inbrowser(D3Tree([[2],[]]), `ls`)
 end
 
-@testset "infinite tree" begin
-    include("testInfiniteTree.jl")
+@testset "Tree expansion" begin
+    include("testTreeExpansion.jl")
 end

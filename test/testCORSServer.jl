@@ -1,12 +1,8 @@
-# import Pkg;
-# Pkg.activate("test");
-# using Debugger
-using D3Trees
-using JSON
-using Test
-# using NBInclude
-using Base64
-using AbstractTrees
+# using D3Trees
+# using JSON
+# using Test
+# using Base64
+# using AbstractTrees
 using HTTP
 using Sockets
 
@@ -16,8 +12,6 @@ module TestTrees
 end
 
 ldroot = TestTrees.LimitedDepthTree()
-
-# Using WS demo from https://github.dev/JuliaWeb/HTTP.jl/tree/master/src
 
 t = D3Tree(ldroot, max_expand_depth=2)
 
