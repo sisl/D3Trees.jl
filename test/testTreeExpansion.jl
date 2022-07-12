@@ -1,4 +1,5 @@
 @testset "expand node" begin
+    # Binary limited depth tree, expand id differently and see if it leads to same visualization
     ldroot = LimitedDepthTree()
     t1 = D3Tree(ldroot, max_expand_depth=1)
     D3Trees.expand_node!(t1, 2, 1)

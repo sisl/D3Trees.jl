@@ -67,6 +67,25 @@ include("binaryAbstractTrees.jl")
     inbrowser(D3Tree([[2],[]]), `ls`)
 end
 
-@testset "Tree expansion" begin
+@testset "lazy loading tree" begin
+    println("Limited depth abstract tree")
+    ldroot = LimitedDepthTree()
+    t1 = D3Tree(ldroot, max_expand_depth=0, init_expand=1, lazy_subtree_depth=1)
+    D3Trees.expand_node!(t1, 1, 1)
+    @test t1.children == Vector{Int64}[[2,3],[],[]]
+    @test 2 in keys(t1.unexpanded_children)
+    @test 3 in keys(t1.unexpanded_children)
+    @test t1.options[:init_expand]==1
+    @test t1.options[:lazy_subtree_depth]==1
+
+    println("Notebook")
+    @nbinclude("../examples/LazyLoadDeepTrees.ipynb")
+end
+
+@testset "tree expansion" begin
     include("testTreeExpansion.jl")
+end
+
+@testset "server" begin
+    include("testServer.jl")
 end

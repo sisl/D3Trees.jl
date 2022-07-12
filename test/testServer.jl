@@ -1,50 +1,63 @@
-
-using D3Trees
-using JSON
-using Test
-using Base64
-using AbstractTrees
 using HTTP
 using Sockets
 
-module TestTrees
-    using AbstractTrees
-    include("binaryAbstractTrees.jl")
-end
+ldroot = LimitedDepthTree()
 
-@testset "Test server" begin
+t = D3Tree(ldroot, max_expand_depth=0)
+unexpanded_ind=1
+div_id = "treevisTestTree"
+tree_data = Dict(div_id=>t)
+HTTP.register!(D3Trees.TREE_ROUTER, "GET", "/api/d3trees/v1/test/{treediv}/{nodeid}", req -> D3Trees.handle_subtree_request(req, tree_data, 1))
 
-ldroot = TestTrees.LimitedDepthTree()
+D3Trees.reset_server()
 
-# Using WS demo from https://github.dev/JuliaWeb/HTTP.jl/tree/master/src
-
-t = D3Tree(ldroot, max_expand_depth=2)
-
-port = 36984
-
-tree_data = Dict{String, D3Tree}()
-DIV_ID = "treevis123"
-tree_data[DIV_ID] = t 
-
-# Start the server async
-server = D3Trees.run_server(Sockets.localhost, port, tree_data; verbose=true)
-
-try
-    # close(server)
-    # throw(Exception("Oh no"))
+try        
+    # Valid request and response
+    res200 = HTTP.get("http://localhost:$(D3Trees.PORT)/api/d3trees/v1/test/$div_id/$unexpanded_ind")
+    @test res200.status==200
+    @test D3Trees.CORS_RES_HEADERS[1] in res200.headers
+    res_data = JSON.parse(String(res200.body))
+    @test res_data["root_id"] == 0
+    @test res_data["unexpanded_children"] == [1,2]
     
-    request = "{\"tree_div_id\":\"$DIV_ID\",\"subtree_root_id\":3}"
-    response = HTTP.post("http://$(Sockets.localhost):$port"; body=request, verbose=1)
-    @test length(t.unexpanded_children)==3+4
-    r = JSON.parse(String(response.body))
-
-    # "+1": responses are converted to javascript 0-based indexing
-    @test r["root_id"]+1==3 
-    @test setdiff(Set(keys(t.unexpanded_children)), [v+1 for v in r["unexpanded_children"]]) == Set([4,6,7])
+    # already expanded node
+    try
+        res410 = HTTP.get("http://localhost:$(D3Trees.PORT)/api/d3trees/v1/test/$div_id/$unexpanded_ind")
+    catch e
+        @test e isa HTTP.Exceptions.StatusError
+        @test e.status == 410
+    
+        @test e.response.status==410
+        @test D3Trees.CORS_RES_HEADERS[1] in e.response.headers
+        @test String(e.response.body) == "Could not expand tree, likely because index $unexpanded_ind is already expanded!"
+    end
+    
+    # bad tree name
+    try
+        res404 = HTTP.get("http://localhost:$(D3Trees.PORT)/api/d3trees/v1/test/badTreeName/$unexpanded_ind")
+    catch e
+        @test e isa HTTP.Exceptions.StatusError
+        @test e.status == 404
+    
+        @test e.response.status==404
+        @test D3Trees.CORS_RES_HEADERS[1] in e.response.headers
+        @test String(e.response.body) == "Sever has no record of tree div badTreeName. Maybe it was cleared already?"
+    end
+    
+    
+    
+    # Bad url
+    try
+        res404 = HTTP.get("http://localhost:$(D3Trees.PORT)/api/d3trees/v1/badpath")
+    catch e
+        @test e isa HTTP.Exceptions.StatusError
+        @test e.status == 404
+    
+        @test e.response.status==404
+        @test D3Trees.CORS_RES_HEADERS[1] in e.response.headers
+    end
 catch e
-    @info "Error while testing" (e, catch_backtrace())
+    throw(e)
 finally
-    @info "Killing server"
-    close(server)
-end
+    close(D3Trees.SERVER[])
 end
