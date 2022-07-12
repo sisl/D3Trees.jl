@@ -29,7 +29,7 @@ struct D3Tree
 end
 
 """
-    D3Tree(node; detect_repeat=true, kwargs...)
+    D3Tree(node; detect_repeat=true, max_expand_depth=typemax(Int), kwargs...)
 
 Construct a tree to be displayed using D3 in a browser or ipython notebook with any object, `node`, that implements the AbstractTrees interface. 
 
@@ -95,8 +95,8 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
 - `init_expand::Integer` - levels to expand initially.
 - `init_duration::Number` - duration of the initial animation in ms.
 - `svg_height::Number` - height of the svg containing the tree in px.
-- `lazy_subtree_depth` - (default: 2) sets depth of subtrees fetched from D3Trees server
-- `dry_run_lazy_vizualization` - (default: true) if true, when starting the visualization, the server methods are ran once on a deepcopy of the tree to speed up first fetch in the visualization. Disable if the initial tree is large or subtrees are slow to compute.
+- `lazy_subtree_depth::Integer` - (default: 2) sets depth of subtrees fetched from D3Trees server
+- `dry_run_lazy_vizualization::Bool` - (default: true) if true, when starting the visualization, the server methods are ran once on a deepcopy of the tree to speed up first fetch in the visualization. Disable if the initial tree is large or subtrees are slow to compute.
 """
 function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)

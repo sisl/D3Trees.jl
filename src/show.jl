@@ -23,14 +23,14 @@ function JSON.json(st::D3OffsetSubtree)
 end
 
 function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
-    try
-        tree_json = json(t)
-        root_id = 1
-        css = read(joinpath(dirname(@__FILE__()), "..", "css", "tree_vis.css"), String)
-        js = read(joinpath(dirname(@__FILE__()), "..", "js", "tree_vis.js"), String)
-        div = "treevis$(randstring())"
-        
 
+    tree_json = json(t)
+    root_id = 1
+    css = read(joinpath(dirname(@__FILE__()), "..", "css", "tree_vis.css"), String)
+    js = read(joinpath(dirname(@__FILE__()), "..", "js", "tree_vis.js"), String)
+    div = "treevis$(randstring())"
+
+    try
         # do not bother with server if tree has no unexpanded nodes.
         if length(t.unexpanded_children) > 0 
             # if server has not been started yet, do so.
@@ -83,6 +83,9 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
 
         println(f,html_string)
     catch e
+        # When running in Jupyter, error in show is ignored and another non-failing method is used instead 
+        # (See https://github.com/JuliaLang/IJulia.jl/issues/1041)
+        # The logging below makes sure the error is noticed
         @error "Show error:" exception=(e,catch_backtrace())
         rethrow(e)
     end

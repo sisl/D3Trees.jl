@@ -45,7 +45,7 @@ serializes it as json and sends back a success response code.
 function JSONMiddleware(handler)
     # Middleware functions return *Handler* functions
     return function(req::HTTP.Request)
-        @info "Incoming server request:\n$req"
+        @debug "Incoming server request:\n$req"
         ret = handler(req)
         # 404 and 405 handlers will return HTTP.Response already
         if ret isa HTTP.Response
@@ -53,7 +53,7 @@ function JSONMiddleware(handler)
         else
             res = HTTP.Response(200, CORS_RES_HEADERS, ret === nothing ? "" : JSON.json(ret))
         end
-        @info "Server reponds:\n$res"
+        @debug "Server reponds:\n$res"
         return res
     end
 end
@@ -96,7 +96,7 @@ end
 function handle_subtree_request(req::HTTP.Request, tree_data::Dict{String, D3Tree}, lazy_subtree_depth::Integer)
     tree_div = HTTP.getparams(req)["treediv"]
     node_id = parse(Int, HTTP.getparams(req)["nodeid"])
-    @info "Request for tree $tree_div - Node: $node_id\n$req"
+    @debug "Request for tree $tree_div - Node: $node_id\n$req"
     return process_node_expand_request(tree_data, tree_div, node_id, lazy_subtree_depth)
 end
 

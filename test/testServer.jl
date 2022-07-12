@@ -1,5 +1,9 @@
 using HTTP
 using Sockets
+using Logging
+
+debuglogger = ConsoleLogger(stderr, Logging.Debug)
+global_logger(debuglogger)
 
 ldroot = LimitedDepthTree()
 
@@ -43,8 +47,6 @@ try
         @test D3Trees.CORS_RES_HEADERS[1] in e.response.headers
         @test String(e.response.body) == "Sever has no record of tree div badTreeName. Maybe it was cleared already?"
     end
-    
-    
     
     # Bad url
     try
