@@ -40,11 +40,7 @@ async function fetchSubtree(dataID){
         console.log({msg:"Got response from D3Trees.jl server", dataID:dataID, response:response})
         return response
        })
-      .then(response => response.json())
-      .then(json => JSON.parse(json))
-      .then(function(json){
-         return json
-        });
+      .then(response => response.json());
 }
 
 function addSubTreeData(subtree){

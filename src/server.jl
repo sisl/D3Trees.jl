@@ -73,8 +73,8 @@ function process_node_expand_request(tree_data::Dict{String, D3Tree}, div_id::St
         tree = tree_data[div_id]
         try
             subtree = D3Trees.expand_node!(tree, subtree_root_id, depth)
-            response = JSON.json(subtree)
-            return response
+            # response = JSON.json(subtree)
+            return subtree
         catch e
             @error "[TREE] Could not expand tree:"
             rethrow(e)
@@ -92,54 +92,25 @@ function handle_subtree_request(req::HTTP.Messages.Message, tree_data::Dict{Stri
     return process_node_expand_request(tree_data, tree_div, node_id, lazy_subtree_depth)
 end
 
+
+# SERVER DRY RUN
+struct DryRunTree end
+AbstractTrees.children(t::DryRunTree) = [1,]
 """
-Runs api request against a copy of a the tree. Leads to faster visualization responses on first click. This helps prevent errors caused by trying to fetching the same resource twice.
+Runs api request against a simple tree. When ran before rendering first visualization, 
+it leads to faster visualization responses on first click. This helps prevent 
+errors caused by trying to fetching the same resource twice.
 """
-function dry_run_server(t::D3Tree)
-    temp_t = deepcopy(t)
-    unexpanded_ind = [keys(temp_t.unexpanded_children)...][1]
+function dry_run_server(t_orig::D3Tree)
+    n = DryRunTree()
+    t = D3Tree(n, max_expand_depth=0)
+    unexpanded_ind=1
+    
+    # t = deepcopy(t_orig)
+    # unexpanded_ind = [keys(t.unexpanded_children)...][1]
+
     div_id = "treevisDryRun"
-    tree_data = Dict(div_id=>temp_t)
+    tree_data = Dict(div_id=>t)
     HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/dryrun/{treediv}/{nodeid}", req -> handle_subtree_request(req, tree_data, 1))
     HTTP.get("http://localhost:$(PORT)/api/d3trees/v1/dryrun/$div_id/$unexpanded_ind")
-    temp_t = tree_data = nothing
-end
-
-
-"""
-    serror(error::Exception) -> String
-
-Get error and stacktrace as String, e.g. for use in warning. 
-Useful in Jypyter notebooks where error messages are not displayed correctly (https://github.com/JuliaLang/IJulia.jl/issues/1043)
-
-Example:
-```julia
-julia> try
-           a=b
-       catch e
-           @warn "Oh no, exception:\n \$(serror(e))"
-       end
-┌ Warning: Oh no, exception:
-│  UndefVarError: b not defined
-│ 13-element Vector{Base.StackTraces.StackFrame}:
-│  top-level scope at REPL[7]:2
-│  eval at boot.jl:373 [inlined]
-│  eval_user_input(ast::Any, backend::REPL.REPLBackend) at REPL.jl:150
-│  repl_backend_loop(backend::REPL.REPLBackend) at REPL.jl:246
-│  start_repl_backend(backend::REPL.REPLBackend, consumer::Any) at REPL.jl:231
-│  run_repl(repl::REPL.AbstractREPL, consumer::Any; backend_on_current_task::Bool) at REPL.jl:364
-│  run_repl(repl::REPL.AbstractREPL, consumer::Any) at REPL.jl:351
-│  (::Base.var"#930#932"{Bool, Bool, Bool})(REPL::Module) at client.jl:394
-│  #invokelatest#2 at essentials.jl:716 [inlined]
-│  invokelatest at essentials.jl:714 [inlined]
-│  run_main_repl(interactive::Bool, quiet::Bool, banner::Bool, history_file::Bool, color_set::Bool) at client.jl:379
-│  exec_options(opts::Base.JLOptions) at client.jl:309
-│  _start() at client.jl:495
-└ @ Main REPL[7]:4
-```
-"""
-function serror(error::Exception)
-    error_msg = sprint(showerror, error)
-    st = sprint((io,v) -> show(io, "text/plain", v), stacktrace(catch_backtrace()))
-    return "$error_msg\n$st"
 end
