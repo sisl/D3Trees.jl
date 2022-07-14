@@ -55,6 +55,7 @@ struct SparseTree <: BTNode
         new(id)
     end
 end
+SparseTree() = SparseTree(1)
 
 function AbstractTrees.children(n::SparseTree)
     if bt_depth(n)%2==0

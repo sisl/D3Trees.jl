@@ -29,22 +29,14 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
     css = read(joinpath(dirname(@__FILE__()), "..", "css", "tree_vis.css"), String)
     js = read(joinpath(dirname(@__FILE__()), "..", "js", "tree_vis.js"), String)
     div = "treevis$(randstring())"
+    tree_url="" #Only set when running the server
 
     try
-        # do not bother with server if tree has no unexpanded nodes.
+        # do not run the server if the tree has no unexpanded nodes.
         if length(t.unexpanded_children) > 0 
-            # if server has not been started yet, do so.
-            if !isassigned(SERVER) 
-                reset_server()
-                # speedup first-click response in the visualization
-                get(t.options, :dry_run_lazy_vizualization, true) ? dry_run_server(t) : nothing
-            end
-            
-            TREE_DATA[][div]=t
-            lazy_subtree_depth = get(t.options, :lazy_subtree_depth, DEFAULT_LAZY_SUBTREE_DEPTH)
-            HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/tree/{treediv}/{nodeid}", req -> handle_subtree_request(req, TREE_DATA[], lazy_subtree_depth))
+            port = serve_tree!(SERVERS, t, div)
+            tree_url = "http://$HOST:$(port)/$API_PATH/"
         end
-
 
         html_string = """
             <!DOCTYPE html>
@@ -66,7 +58,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
                 var initExpand = $(get(t.options, :init_expand, 0));
                 var initDuration = $(get(t.options, :init_duration, 750));
                 var svgHeight = $(get(t.options, :svg_height, 600));
-                var tree_url = "$TREE_URL";
+                var tree_url = "$tree_url";
                 $js
                 })();
             </script>
@@ -87,7 +79,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
         # (See https://github.com/JuliaLang/IJulia.jl/issues/1041)
         # The logging below makes sure the error is noticed
         @error "Show error:" exception=(e,catch_backtrace())
-        rethrow(e)
+        throw(e)
     end
 end
 

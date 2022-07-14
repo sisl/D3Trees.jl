@@ -95,8 +95,9 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
 - `init_expand::Integer` - levels to expand initially.
 - `init_duration::Number` - duration of the initial animation in ms.
 - `svg_height::Number` - height of the svg containing the tree in px.
+- `port::Integer` - specify server port for D3Trees server that will serve subtrees for visualization. Shutdown server by `shutdown_server(port)`.
 - `lazy_subtree_depth::Integer` - (default: 2) sets depth of subtrees fetched from D3Trees server
-- `dry_run_lazy_vizualization::Bool` - (default: true) if true, when starting the visualization, the server methods are ran once on a deepcopy of the tree to speed up first fetch in the visualization. Disable if the initial tree is large or subtrees are slow to compute.
+- `dry_run_lazy_vizualization::Function` - (default: t -> D3Trees.dry_run_server(port, t)) function that is ran once before visualization is started to speed up first fetch in the visualization. Provide custom function if your tree's children method takes a long time on first run.
 """
 function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)

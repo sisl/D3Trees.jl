@@ -12,36 +12,65 @@ const CORS_OPT_HEADERS = [
 # CORS respoonse headers (according to https://cors-errors.info/faq)
 const CORS_RES_HEADERS = ["Access-Control-Allow-Origin" => "*"]
 
-TREE_DATA = Ref{Dict{String, D3Tree}}()
-const PORT = 16370 # Randomly chosen
-const TREE_URL = "http://localhost:$(PORT)/api/d3trees/v1/tree/"
-const HOST = Sockets.localhost
-SERVER = Ref{HTTP.Servers.Server}()
 cors404(::HTTP.Request) = HTTP.Response(404, CORS_RES_HEADERS, "")
 cors405(::HTTP.Request) = HTTP.Response(405, CORS_RES_HEADERS, "")
-const TREE_ROUTER = HTTP.Router(cors404, cors405)
-const DEFAULT_LAZY_SUBTREE_DEPTH = 2
+
+const HOST = Sockets.localhost
+
+struct D3TreeServer
+    server::HTTP.Servers.Server
+    router::HTTP.Router
+    tree_data::Dict{String, D3Tree}
+end
+HTTP.close(d3s::D3TreeServer) = close(d3s.server)
+
+const SERVERS = Dict{Int64, D3TreeServer}()
+
+
 
 """
-    reset_server()
+    D3Trees.reset_server!(port)
 
-Restart D3Trees server and resets the TREE_DATA. 
+Restart D3Trees server on given port and remove the associated tree_data holding the unexpanded nodes. 
 Use it to get rid of past visualizations that are still kept in memory.
 """
-function reset_server()
-    @info "(Re)setting D3Trees server."
-    TREE_DATA[] = Dict{String, D3Tree}()
-    if isassigned(SERVER) && isopen(SERVER[])
-        close(SERVER[])
-    end    
-    SERVER[] = HTTP.serve!(TREE_ROUTER |> CorsMiddleware |> LoggingMiddleware, HOST, PORT)
+
+function reset_server!(port)
+    @info "(Re)setting D3Trees server at $HOST:$port"
+
+    # Kill server on given port if runnning
+    if haskey(SERVERS, port)
+        shutdown_server!(port)
+    end
+
+    # start new server on given port
+    router = HTTP.Router(cors404, cors405)
+    server = HTTP.serve!(router |> cors_middleware |> logging_middleware, HOST, port)
+    tree_data = Dict{String, D3Tree}()
+    d3s = D3TreeServer(server, router, tree_data)
+    SERVERS[port] = d3s
+    return d3s
 end
 
+"""
+    D3Trees.shutdown_server!(port)
+    D3Trees.shutdown_server!()
+
+Shutdown D3Trees server (all servers if port is not specified) and remove associated tree data.
+"""
+function shutdown_server!(port)
+    d3s=SERVERS[port]
+    isopen(d3s.server) ? close(d3s) : nothing
+    @assert istaskdone(d3s.server.task)
+    delete!(SERVERS, port)
+end
+shutdown_server!() = [shutdown_server!(port) for port in keys(SERVERS)]
+
 
 """
-LoggingMiddleware logs the request before passing it on to the tree router and request handler and then logs the returned response.
+logging_middleware logs the request before passing it on to the tree router and request handler and then logs the returned response.
 """
-function LoggingMiddleware(handler)
+function logging_middleware(handler)
     # Middleware functions return *Handler* functions
     return function(req::HTTP.Request)
         @debug "Incoming server request:\n$req"
@@ -52,7 +81,7 @@ function LoggingMiddleware(handler)
 end
 
 """
-CorsMiddleware: handles preflight request with the OPTIONS flag
+cors_middleware: handles preflight request with the OPTIONS flag
 If a request was recieved with the correct headers, then a response will be 
 sent back with a 200 code, if the correct headers were not specified in the request,
 then a CORS error will be recieved on the client side
@@ -60,7 +89,7 @@ Since each request passes throught the CORS Handler, then if the request is
 not a preflight request, it will simply go to the rest of the layers to be passed to the
 correct service function.
 """
-function CorsMiddleware(handler)
+function cors_middleware(handler)
     return function(req::HTTP.Request)
         if HTTP.hasheader(req, "OPTIONS")
             return HTTP.Response(200, CORS_OPT_HEADERS)
@@ -104,18 +133,44 @@ Runs api request against a simple tree. When ran before rendering first visualiz
 it leads to faster visualization responses on first click. This helps prevent 
 errors caused by trying to fetching the same resource twice.
 """
-function dry_run_server(t_orig::D3Tree)
+function dry_run_server(port, tree::D3Tree)
+    # t = deepcopy(tree)
+    # unexpanded_ind = [keys(t.unexpanded_children)...][1]
+
     n = DryRunTree()
     t = D3Tree(n, max_expand_depth=0)
     unexpanded_ind=1
     
-    # t = deepcopy(t_orig)
-    # unexpanded_ind = [keys(t.unexpanded_children)...][1]
-
     div_id = "treevisDryRun"
     tree_data = Dict(div_id=>t)
-    HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/dryrun/{treediv}/{nodeid}", req -> handle_subtree_request(req, tree_data, 1))
-    HTTP.get("http://localhost:$(PORT)/api/d3trees/v1/dryrun/$div_id/$unexpanded_ind")
+    HTTP.register!(SERVERS[port].router, "GET", "/api/d3trees/v1/dryrun/{treediv}/{nodeid}", req -> handle_subtree_request(req, tree_data, 1))
+    HTTP.get("http://localhost:$(port)/api/d3trees/v1/dryrun/$div_id/$unexpanded_ind")
+end
+
+
+const DEFAULT_LAZY_SUBTREE_DEPTH = 2
+const DEFAULT_PORT =16370
+const API_PATH = "api/d3trees/v1/tree"
+
+"""
+    Start serving tree from existing or new server on some port. Returns port for the server.
+"""
+function serve_tree!(servers::Dict{<:Integer, D3TreeServer}, t::D3Tree, div::String)
+    port = get(t.options, :port, DEFAULT_PORT)
+    lazy_subtree_depth = get(t.options, :lazy_subtree_depth, DEFAULT_LAZY_SUBTREE_DEPTH)
+
+    # if server on this port is not yet running, start it.
+    if !haskey(servers, port) 
+        d3server = reset_server!(port)
+        # speedup first-click response in the visualization
+        get(t.options, :dry_run_lazy_vizualization, t -> dry_run_server(port, t))(t)
+    else
+        d3server = servers[port]
+    end
+    
+    d3server.tree_data[div] = t 
+    HTTP.register!(servers[port].router, "GET", "/$API_PATH/{treediv}/{nodeid}", req -> handle_subtree_request(req, d3server.tree_data, lazy_subtree_depth))
+    return port
 end
 
 """
