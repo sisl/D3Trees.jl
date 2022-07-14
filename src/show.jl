@@ -42,7 +42,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
             
             TREE_DATA[][div]=t
             lazy_subtree_depth = get(t.options, :lazy_subtree_depth, DEFAULT_LAZY_SUBTREE_DEPTH)
-            HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/tree/{treediv}/{nodeid}", req -> D3Trees.handle_subtree_request(req, TREE_DATA[], lazy_subtree_depth))
+            HTTP.register!(TREE_ROUTER, "GET", "/api/d3trees/v1/tree/{treediv}/{nodeid}", req -> handle_subtree_request(req, TREE_DATA[], lazy_subtree_depth))
         end
 
 

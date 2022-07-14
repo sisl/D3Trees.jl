@@ -33,7 +33,7 @@ try
     
         @test e.response.status==410
         @test D3Trees.CORS_RES_HEADERS[1] in e.response.headers
-        @test String(e.response.body) == "Could not expand tree, likely because index $unexpanded_ind is already expanded!"
+        @test String(e.response.body) == "Could not expand tree, likely because index $unexpanded_ind is already expanded! See server log for details."
     end
     
     # bad tree name

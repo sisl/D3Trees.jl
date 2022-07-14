@@ -5,7 +5,7 @@ using NBInclude
 using Base64
 using AbstractTrees
 
-include("binaryAbstractTrees.jl")
+include("binary_abstract_trees.jl")
 
 @testset "simple tree" begin
     children = [[2,3], [], [4], []]
@@ -79,13 +79,13 @@ end
     @test t1.options[:lazy_subtree_depth]==1
 
     println("Notebook")
-    @nbinclude("../examples/LazyLoadDeepTrees.ipynb")
+    @nbinclude("../examples/lazy_load_deep_trees.ipynb")
 end
 
 @testset "tree expansion" begin
-    include("testTreeExpansion.jl")
+    include("test_tree_expansion.jl")
 end
 
 @testset "server" begin
-    include("testServer.jl")
+    include("test_server.jl")
 end

@@ -34,37 +34,32 @@ function reset_server()
     if isassigned(SERVER) && isopen(SERVER[])
         close(SERVER[])
     end    
-    SERVER[] = HTTP.serve!(TREE_ROUTER |> JSONMiddleware |> CorsMiddleware, HOST, PORT)
+    SERVER[] = HTTP.serve!(TREE_ROUTER |> CorsMiddleware |> LoggingMiddleware, HOST, PORT)
 end
 
 
-#= 
-JSONMiddleware recieves the body of the response from the other service funtions 
-serializes it as json and sends back a success response code.
-=#
-function JSONMiddleware(handler)
+"""
+LoggingMiddleware logs the request before passing it on to the tree router and request handler and then logs the returned response.
+"""
+function LoggingMiddleware(handler)
     # Middleware functions return *Handler* functions
     return function(req::HTTP.Request)
         @debug "Incoming server request:\n$req"
-        ret = handler(req)
-        # 404 and 405 handlers will return HTTP.Response already
-        if ret isa HTTP.Response
-            res = ret
-        else
-            res = HTTP.Response(200, CORS_RES_HEADERS, ret === nothing ? "" : JSON.json(ret))
-        end
+        res = handler(req)
         @debug "Server reponds:\n$res"
         return res
     end
 end
 
-#= CorsMiddleware: handles preflight request with the OPTIONS flag
+"""
+CorsMiddleware: handles preflight request with the OPTIONS flag
 If a request was recieved with the correct headers, then a response will be 
 sent back with a 200 code, if the correct headers were not specified in the request,
 then a CORS error will be recieved on the client side
 Since each request passes throught the CORS Handler, then if the request is 
-not a preflight request, it will simply go to the JSONMiddleware to be passed to the
-correct service function =#
+not a preflight request, it will simply go to the rest of the layers to be passed to the
+correct service function.
+"""
 function CorsMiddleware(handler)
     return function(req::HTTP.Request)
         if HTTP.hasheader(req, "OPTIONS")
@@ -79,12 +74,12 @@ function process_node_expand_request(tree_data::Dict{String, D3Tree}, div_id::St
     if haskey(tree_data, div_id)
         tree = tree_data[div_id]
         try
-            subtree = D3Trees.expand_node!(tree, subtree_root_id, depth)
-            return subtree
+            subtree = expand_node!(tree, subtree_root_id, depth)
+            return HTTP.Response(200, CORS_RES_HEADERS, JSON.json(subtree))
         catch e
             @error "[TREE] Could not expand tree!\n$(serror(e))"
             # rethrow(e)
-            return HTTP.Response(410, CORS_RES_HEADERS, "Could not expand tree, likely because index $subtree_root_id is already expanded!")
+            return HTTP.Response(410, CORS_RES_HEADERS, "Could not expand tree, likely because index $subtree_root_id is already expanded! See server log for details.")
         end
     else
         @error "[SERVER] No record of tree" div_id
