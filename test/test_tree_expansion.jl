@@ -1,7 +1,7 @@
 @testset "expand node" begin
     # Binary limited depth tree, expand id differently and see if it leads to same visualization
     ldroot = LimitedDepthTree()
-    t1 = D3Tree(ldroot, max_expand_depth=1)
+    t1 = D3Tree(ldroot, lazy_expand_after_depth=1)
     D3Trees.expand_node!(t1, 2, 1)
     D3Trees.expand_node!(t1, 3, 1)
     D3Trees.expand_node!(t1, 4, 1)
@@ -9,11 +9,11 @@
     D3Trees.expand_node!(t1, 6, 1)
     D3Trees.expand_node!(t1, 7, 1)
 
-    t2 = D3Tree(ldroot, max_expand_depth=1)
+    t2 = D3Tree(ldroot, lazy_expand_after_depth=1)
     D3Trees.expand_node!(t2, 2, 2)
     D3Trees.expand_node!(t2, 3, 2)
 
-    t3 = D3Tree(ldroot, max_expand_depth=3)
+    t3 = D3Tree(ldroot, lazy_expand_after_depth=3)
 
     # The trees are grown differently, so indeces can be ordered differently
     @test length(t1.children) == length(t2.children) == length(t3.children)

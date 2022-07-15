@@ -29,7 +29,7 @@ struct D3Tree
 end
 
 """
-    D3Tree(node; detect_repeat=true, max_expand_depth=typemax(Int), kwargs...)
+    D3Tree(node; detect_repeat=true, lazy_expand_after_depth=typemax(Int), kwargs...)
 
 Construct a tree to be displayed using D3 in a browser or ipython notebook with any object, `node`, that implements the AbstractTrees interface. 
 
@@ -41,9 +41,11 @@ D3Trees.style(node)
 D3Trees.link_style(node)
 ```
 
-Allows for lazy loading of large trees through the `max_expand_depth` keyword argument, which sets the depth to which nodes are expanded. When visualizing a tree with unexpanded nodes, julia server is started to expand them on demand and serve them to the D3 visualizaion. 
-    
-The server does not have information about the lifetime of different visualizations so it might keep references to past visualizations, potentially holding up a lot of memory. To reset the server and remove references to old data, run `D3Trees.reset_server()` to reset everythingh manually.
+Allows for lazy loading of large trees through the `lazy_expand_after_depth` keyword argument. Nodes beyonnd this depth are not intially expanded for visualization. 
+Instead, they are cached and only expanded when requested by the visualization. The serving is done by the D3Trees HTTP server.
+
+The server does not have information about the lifetime of different visualizations so it might keep references to past visualizations, 
+potentially holding up a lot of memory. To reset the server and remove references to old data, run either `D3Trees.reset_server()` or `D3Trees.shutdown_server()`.
 
 # Arguments
 
@@ -54,18 +56,21 @@ The server does not have information about the lifetime of different visualizati
 ## Keyword
 
 - `detect_repeat`: if true, uses a dictionary to detect whether a node has appeared previously
-- `max_expand_depth::Integer`: default typemax(Int). Sets tree depth to at which `AbstractTrees.children(node)` will not be called anymore. Instead, nodes at this depth are cached and `children(node)` is called only when node is clicked in the D3 interactive visualization. Root has depth 0, so setting `max_expand_depth=1` expands only the root.
+- `lazy_expand_after_depth::Integer`: default 20. Sets tree depth to at which `AbstractTrees.children(node)` will not be called anymore. Instead, nodes at this depth are cached and `children(node)` is called only when node is clicked in the D3 interactive visualization. Root has depth 0, so setting `lazy_expand_after_depth=1` expands only the root.
+- `port::Integer` - (default: 16370) specify server port for D3Trees server that will serve subtrees for visualization. Shutdown server by `shutdown_server(port)`.
+- `lazy_subtree_depth::Integer` - (default: 2) sets depth of subtrees fetched from D3Trees server
+- `dry_run_lazy_vizualization::Function` - (default: t -> D3Trees.dry_run_server(port, t)) function that is ran once before visualization is started to speed up first fetch in the visualization. Provide custom function if your tree's children method takes a long time on first run.
 - Also supports, the non-vector arguments of the vector-of-vectors `D3Tree` constructor, i.e. `title`, `init_expand`, `init_duration`, `svg_height`.
 """
-function D3Tree(node; detect_repeat::Bool=true, max_expand_depth::Integer=typemax(Int), kwargs...)
+function D3Tree(node; detect_repeat::Bool=true, lazy_expand_after_depth::Integer=20, kwargs...)
 
     t = D3Tree(Vector{Int}[]; kwargs...)
 
     if detect_repeat
         node_dict = Dict{Any,Int}()
-        push_node!(t, node, max_expand_depth, node_dict)
+        push_node!(t, node, lazy_expand_after_depth, node_dict)
     else
-        push_node!(t, node, max_expand_depth)
+        push_node!(t, node, lazy_expand_after_depth)
     end
     return t
 end
@@ -95,9 +100,6 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
 - `init_expand::Integer` - levels to expand initially.
 - `init_duration::Number` - duration of the initial animation in ms.
 - `svg_height::Number` - height of the svg containing the tree in px.
-- `port::Integer` - specify server port for D3Trees server that will serve subtrees for visualization. Shutdown server by `shutdown_server(port)`.
-- `lazy_subtree_depth::Integer` - (default: 2) sets depth of subtrees fetched from D3Trees server
-- `dry_run_lazy_vizualization::Function` - (default: t -> D3Trees.dry_run_server(port, t)) function that is ran once before visualization is started to speed up first fetch in the visualization. Provide custom function if your tree's children method takes a long time on first run.
 """
 function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)
@@ -168,7 +170,7 @@ end
 """
 DFS add node to the D3Tree structure
 """
-function push_node!(t::D3Tree, node, max_expand_depth::Int, node_dict=nothing)
+function push_node!(t::D3Tree, node, lazy_expand_after_depth::Int, node_dict=nothing)
     if !(node_dict === nothing) && haskey(node_dict, node)
         return node_dict[node]
     end
@@ -184,9 +186,9 @@ function push_node!(t::D3Tree, node, max_expand_depth::Int, node_dict=nothing)
     push!(t.style, style(node))
     push!(t.link_style, link_style(node))
 
-    if max_expand_depth > 0
+    if lazy_expand_after_depth > 0
         for c in children(node)
-            c_ind = push_node!(t, c, max_expand_depth - 1, node_dict)
+            c_ind = push_node!(t, c, lazy_expand_after_depth - 1, node_dict)
             push!(t.children[ind], c_ind)
         end
     else
@@ -224,13 +226,13 @@ end
 """
 Calculate missing children, for use with the D3Trees server for lazyly fetching data.
 """
-function expand_node!(t::D3Tree, ind::Int, max_expand_depth::Int)
+function expand_node!(t::D3Tree, ind::Int, lazy_expand_after_depth::Int)
     # TODO: missing handling of caching of repeated nodes
     @assert haskey(t.unexpanded_children, ind) "Node at index $ind is already expanded!"
     node = pop!(t.unexpanded_children, ind)
 
     # TODO: also pass other options from t?
-    subtree = D3Tree(node; max_expand_depth=max_expand_depth)
+    subtree = D3Tree(node; lazy_expand_after_depth=lazy_expand_after_depth)
     offset = length(t.children) - 1
 
     offset_subtree = D3OffsetSubtree(ind, subtree, offset)

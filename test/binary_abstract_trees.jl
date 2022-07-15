@@ -4,7 +4,7 @@ Binary tree node. Must have field id.
 abstract type BTNode end
 
 bt_depth(id::Int) = floor(UInt, log2(id))
-bt_children_ids(id::Int) = [2*id, 2*id+1]
+bt_children_ids(id::Int) = [2 * id, 2 * id + 1]
 bt_depth(n::BTNode) = bt_depth(n.id)
 Base.show(io::IO, n::BTNode) = print(io, "$(n.id) (d=$(bt_depth(n))) -> $(getfield.(AbstractTrees.children(n), :id))")
 
@@ -22,13 +22,13 @@ struct LimitedDepthTree <: BTNode
     max_leaf_depth::Int
 
     function LimitedDepthTree(id, leaf_depth)
-        @assert id>0 "All notes must have id > 0, root has 1."
-        @assert leaf_depth>=0
+        @assert id > 0 "All notes must have id > 0, root has 1."
+        @assert leaf_depth >= 0
         new(id, leaf_depth)
     end
 end
 
-LimitedDepthTree(;root_id=1, max_leaf_depth=typemax(Int)) =  LimitedDepthTree(root_id, max_leaf_depth)
+LimitedDepthTree(; root_id=1, max_leaf_depth=typemax(Int)) = LimitedDepthTree(root_id, max_leaf_depth)
 expand(n::LimitedDepthTree) = bt_depth(n) < n.max_leaf_depth
 AbstractTrees.children(n::LimitedDepthTree) = expand(n) ? LimitedDepthTree.(bt_children_ids(n.id), n.max_leaf_depth) : LimitedDepthTree[]
 
@@ -51,16 +51,16 @@ struct SparseTree <: BTNode
     id::Int
 
     function SparseTree(id)
-        @assert id>0 "All notes must have id > 0, root has 1."
+        @assert id > 0 "All notes must have id > 0, root has 1."
         new(id)
     end
 end
 SparseTree() = SparseTree(1)
 
 function AbstractTrees.children(n::SparseTree)
-    if bt_depth(n)%2==0
+    if bt_depth(n) % 2 == 0
         SparseTree.(bt_children_ids(n.id))
     else
-        n.id%2==0 ? SparseTree.(bt_children_ids(n.id)) : SparseTree[]
+        n.id % 2 == 0 ? SparseTree.(bt_children_ids(n.id)) : SparseTree[]
     end
 end

@@ -74,20 +74,20 @@ will yield
 
 or, see [examples/hello.ipynb](https://nbviewer.jupyter.org/github/sisl/D3Trees.jl/blob/master/examples/hello.ipynb)
 
-## Lazy loading deep trees
+## Lazy loading trees
 
 Deep trees can be expanded on demand from the visualization by clicking on unexpanded nodes. For example, see [examples/LazyLoadDeepTrees.ipynb](https://nbviewer.jupyter.org/github/sisl/D3Trees.jl/blob/master/examples/LazyLoadDeepTrees.ipynb)
 
-The lazy loading can be controlled through two keyword arguments:
+The lazy loading can be controlled through two main keyword arguments:
 
-- `max_expand_depth` which controls the initial expansion depth of the tree, before being sent as json to the visualization, 
+- `lazy_expand_after_depth` which controls the initial expansion depth of the tree, before being sent as json to the visualization, 
 - `lazy_subtree_depth` which determines the depth of on-demand expanded subtrees.
 
 ```julia
 # very deep tree
 ldroot = LimitedDepthTree()
 # launches visualization and click some nodes
-D3Tree(ldroot, max_expand_depth=0,  lazy_subtree_depth=1)
+D3Tree(ldroot, lazy_expand_after_depth=0,  lazy_subtree_depth=1)
 ```
 
 returns

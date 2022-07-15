@@ -20,11 +20,11 @@ const HOST = Sockets.localhost
 struct D3TreeServer
     server::HTTP.Servers.Server
     router::HTTP.Router
-    tree_data::Dict{String, D3Tree}
+    tree_data::Dict{String,D3Tree}
 end
 HTTP.close(d3s::D3TreeServer) = close(d3s.server)
 
-const SERVERS = Dict{Int64, D3TreeServer}()
+const SERVERS = Dict{Int64,D3TreeServer}()
 
 
 
@@ -46,7 +46,7 @@ function reset_server!(port)
     # start new server on given port
     router = HTTP.Router(cors404, cors405)
     server = HTTP.serve!(router |> cors_middleware |> logging_middleware, HOST, port)
-    tree_data = Dict{String, D3Tree}()
+    tree_data = Dict{String,D3Tree}()
     d3s = D3TreeServer(server, router, tree_data)
     SERVERS[port] = d3s
     return d3s
@@ -59,7 +59,7 @@ end
 Shutdown D3Trees server (all servers if port is not specified) and remove associated tree data.
 """
 function shutdown_server!(port)
-    d3s=SERVERS[port]
+    d3s = SERVERS[port]
     isopen(d3s.server) ? close(d3s) : nothing
     @assert istaskdone(d3s.server.task)
     delete!(SERVERS, port)
@@ -72,7 +72,7 @@ logging_middleware logs the request before passing it on to the tree router and 
 """
 function logging_middleware(handler)
     # Middleware functions return *Handler* functions
-    return function(req::HTTP.Request)
+    return function (req::HTTP.Request)
         @debug "Incoming server request:\n$req"
         res = handler(req)
         @debug "Server reponds:\n$res"
@@ -90,16 +90,16 @@ not a preflight request, it will simply go to the rest of the layers to be passe
 correct service function.
 """
 function cors_middleware(handler)
-    return function(req::HTTP.Request)
+    return function (req::HTTP.Request)
         if HTTP.hasheader(req, "OPTIONS")
             return HTTP.Response(200, CORS_OPT_HEADERS)
-        else 
+        else
             return handler(req)
         end
     end
 end
 
-function process_node_expand_request(tree_data::Dict{String, D3Tree}, div_id::String, subtree_root_id::Integer, depth::Integer)
+function process_node_expand_request(tree_data::Dict{String,D3Tree}, div_id::String, subtree_root_id::Integer, depth::Integer)
     if haskey(tree_data, div_id)
         tree = tree_data[div_id]
         try
@@ -117,7 +117,7 @@ function process_node_expand_request(tree_data::Dict{String, D3Tree}, div_id::St
     end
 end
 
-function handle_subtree_request(req::HTTP.Request, tree_data::Dict{String, D3Tree}, lazy_subtree_depth::Integer)
+function handle_subtree_request(req::HTTP.Request, tree_data::Dict{String,D3Tree}, lazy_subtree_depth::Integer)
     tree_div = HTTP.getparams(req)["treediv"]
     node_id = parse(Int, HTTP.getparams(req)["nodeid"])
     @debug "Request for tree $tree_div - Node: $node_id\n$req"
@@ -138,46 +138,48 @@ function dry_run_server(port, tree::D3Tree)
     # unexpanded_ind = [keys(t.unexpanded_children)...][1]
 
     n = DryRunTree()
-    t = D3Tree(n, max_expand_depth=0)
-    unexpanded_ind=1
-    
+    t = D3Tree(n, lazy_expand_after_depth=0)
+    unexpanded_ind = 1
+
     div_id = "treevisDryRun"
-    tree_data = Dict(div_id=>t)
+    tree_data = Dict(div_id => t)
     HTTP.register!(SERVERS[port].router, "GET", "/api/d3trees/v1/dryrun/{treediv}/{nodeid}", req -> handle_subtree_request(req, tree_data, 1))
     HTTP.get("http://localhost:$(port)/api/d3trees/v1/dryrun/$div_id/$unexpanded_ind")
 end
 
 
 const DEFAULT_LAZY_SUBTREE_DEPTH = 2
-const DEFAULT_PORT =16370
+const DEFAULT_PORT = 16370
 const API_PATH = "api/d3trees/v1/tree"
 
 """
     Start serving tree from existing or new server on some port. Returns port for the server.
 """
-function serve_tree!(servers::Dict{<:Integer, D3TreeServer}, t::D3Tree, div::String)
+function serve_tree!(servers::Dict{<:Integer,D3TreeServer}, t::D3Tree, div::String)
     port = get(t.options, :port, DEFAULT_PORT)
     lazy_subtree_depth = get(t.options, :lazy_subtree_depth, DEFAULT_LAZY_SUBTREE_DEPTH)
 
     # if server on this port is not yet running, start it.
-    if !haskey(servers, port) 
+    if !haskey(servers, port)
         d3server = reset_server!(port)
         # speedup first-click response in the visualization
         get(t.options, :dry_run_lazy_vizualization, t -> dry_run_server(port, t))(t)
     else
         d3server = servers[port]
     end
-    
-    d3server.tree_data[div] = t 
+
+    d3server.tree_data[div] = t
     HTTP.register!(servers[port].router, "GET", "/$API_PATH/{treediv}/{nodeid}", req -> handle_subtree_request(req, d3server.tree_data, lazy_subtree_depth))
     return port
 end
 
 """
     serror(error::Exception) -> String
+    
 Get error and stacktrace as String, e.g. for use in warning. 
 Useful in Jypyter notebooks where error messages are not displayed correctly (https://github.com/JuliaLang/IJulia.jl/issues/1043)
-Example:
+
+# Example
 ```julia
 julia> try
            a=b
@@ -205,6 +207,6 @@ julia> try
 """
 function serror(error::Exception)
     error_msg = sprint(showerror, error)
-    st = sprint((io,v) -> show(io, "text/plain", v), stacktrace(catch_backtrace()))
+    st = sprint((io, v) -> show(io, "text/plain", v), stacktrace(catch_backtrace()))
     return "$error_msg\n$st"
 end
