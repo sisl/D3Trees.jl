@@ -30,7 +30,34 @@ function loadScript(url, callback)
     head.appendChild(script);
 }
 
+// ======== Fetching subtree data
+async function fetchSubtree(dataID){
+    console.log({msg:"Sending request to D3Trees.jl server", dataID:dataID});
+
+    return  fetch(tree_url+div+"/"+(dataID+1), {
+        method: 'GET',
+      }).then(function(response){
+        console.log({msg:"Got response from D3Trees.jl server", dataID:dataID, response:response})
+        return response
+       })
+      .then(response => response.json());
+}
+
+function addSubTreeData(subtree){
+    treeData.unexpanded_children.delete(subtree.root_id);
+
+    treeData.children[subtree.root_id]=subtree.root_children;
+    treeData.children.push(...(subtree.children));
+    treeData.unexpanded_children = new Set([...treeData.unexpanded_children, ...subtree.unexpanded_children]);
+    treeData.text.push(...subtree.text);
+    treeData.tooltip.push(...subtree.tooltip);
+    treeData.style.push(...subtree.style);
+    treeData.link_style.push(...subtree.link_style);
+}
+
+// ==== Showing trees ====
 function showTree() {
+    treeData.unexpanded_children = new Set(treeData.unexpanded_children);
         
     // var margin = {top: 20, right: 120, bottom: 20, left: 120},
     var margin = {top: 20, right: 120, bottom: 80, left: 120},
@@ -88,7 +115,7 @@ function showTree() {
       d.children = [];
       if (children) {
         for (var i = 0; i < children.length; i++) {
-          var cid = children[i]-1;
+          var cid = children[i];
           d.children.push(createDisplayNode(cid, expandLevel-1));
         }
       }
@@ -139,6 +166,9 @@ function showTree() {
       tbox.each( function(d) {
           var el = d3.select(this)
           var text = treeData.text[d.dataID];
+          //=== Debug helper - display visualization data ID as part of message
+          //   text = '=' + d.dataID + '= ' + text;
+          //===
           var lines = text.split('\n');
           for (var i = 0; i < lines.length; i++) {
               var tspan = el.append("tspan").text(lines[i]);
@@ -206,18 +236,25 @@ function showTree() {
       });
     }
 
-    // Toggle children on click.
+    // Toggle children on click, fetch from Julia server if necessary
     function click(d) {
-      if (d.children) {
-        d._children = d.children;
-        d.children = null;
-      } else if (d._children) {
-        d.children = d._children;
-        d._children = null;
-      } else {
-        initializeChildren(d, 1);
-      }
-      update(d, 750);
+        if (d.children) {
+            d._children = d.children;
+            d.children = null;
+            update(d, 750);
+        } else if (d._children) {
+            d.children = d._children;
+            d._children = null;
+            update(d, 750);
+        } else if(treeData.unexpanded_children.has(d.dataID)) {
+            fetchSubtree(d.dataID)
+            .then(subtree => addSubTreeData(subtree))
+            .then(() => initializeChildren(d, 1))
+            .then(() => update(d, 750))
+        } else {
+            initializeChildren(d, 1);
+            update(d, 750);
+        }
     }
 
 }

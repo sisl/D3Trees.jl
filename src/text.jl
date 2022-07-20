@@ -1,4 +1,4 @@
-function shownode(io::IO, node, depth::Int, item_prefix::String, prefix::String)
+function shownode(io::IO, node::D3TreeNode, depth::Int, item_prefix::String, prefix::String)
     buf = PipeBuffer()
     printnode(buf, node)
     for (i, line) in enumerate(eachline(buf, keep=true))
