@@ -260,6 +260,7 @@ function expand_node!(t::D3Tree, ind::Int, lazy_expand_after_depth::Int)
     append!(t.text, offset_subtree.subtree.text)
     append!(t.tooltip, offset_subtree.subtree.tooltip)
     append!(t.style, offset_subtree.subtree.style)
+    append!(t.shape, offset_subtree.subtree.shape)
     append!(t.link_style, offset_subtree.subtree.link_style)
 
     return offset_subtree

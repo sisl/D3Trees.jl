@@ -52,6 +52,7 @@ function addSubTreeData(subtree){
     treeData.text.push(...subtree.text);
     treeData.tooltip.push(...subtree.tooltip);
     treeData.style.push(...subtree.style);
+    treeData.shape.push(...subtree.shape);
     treeData.link_style.push(...subtree.link_style);
 }
 
