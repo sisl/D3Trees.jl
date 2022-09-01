@@ -153,6 +153,7 @@ function showTree() {
           .attr("class", "node")
           .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; })
           .on("click", click)
+          .on("dbclick", dbclick)
 
       // Enter the selected shape
       nodeEnter.each(function(d){
@@ -277,25 +278,45 @@ function showTree() {
         }
     }
 
+    async function display_nested_children(d, display_depth){
+        let depth = 1;
+        let expanding=null;
+        let to_expand=[d];
+        while(depth<=display_depth){
+            expanding=to_expand;
+            to_expand=[];
+            // console.log([depth, expanding.length])
+            while(expanding.length>0){
+                let n = expanding.pop();
+                await display_children(n)
+                if(n.children && n.children.length>0){
+                    to_expand.push(...n.children);
+                }
+            }
+            depth++;
+        }
+    }
+
     async function click(d) {
         if (d.children) {
             hide_children(d)
         } else {
-            let depth = 1;
-            let expanding=null;
-            let to_expand=[d];
-            while(depth<=on_click_display_depth){
-                expanding=to_expand;
-                to_expand=[];
-                // console.log([depth, expanding.length])
-                while(expanding.length>0){
-                    let n = expanding.pop();
-                    await display_children(n)
-                    if(n.children && n.children.length>0){
-                        to_expand.push(...n.children);
-                    }
-                }
-                depth++;
+            if(on_click_display_depth>1){
+                display_nested_children(d, on_click_display_depth)
+            } else{
+                display_children(d)
+            }
+        }
+    }
+
+    async function dbclick(d){
+        if (d.children) {
+            hide_children(d)
+        } else {
+            if(on_click_display_depth==1){
+                display_nested_children(d, 2)
+            } else{
+                display_children(d)
             }
         }
     }
