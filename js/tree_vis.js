@@ -149,11 +149,20 @@ function showTree() {
           .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
       // Enter any new nodes at the parent's previous position.
+      var timeout = null;
+      var double_click_timeout=300
       var nodeEnter = node.enter().append("g")
           .attr("class", "node")
           .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; })
-          .on("click", click)
-          .on("dbclick", dbclick)
+          .on("click", function(d){ 
+            clearTimeout(timeout);
+            timeout = setTimeout(function(d) {
+                click(d);}, double_click_timeout, d)
+            })
+          .on("dblclick", function(d){ 
+            clearTimeout(timeout);
+            dblclick(d);
+            })
 
       // Enter the selected shape
       nodeEnter.each(function(d){
@@ -285,7 +294,6 @@ function showTree() {
         while(depth<=display_depth){
             expanding=to_expand;
             to_expand=[];
-            // console.log([depth, expanding.length])
             while(expanding.length>0){
                 let n = expanding.pop();
                 await display_children(n)
@@ -298,23 +306,25 @@ function showTree() {
     }
 
     async function click(d) {
-        if (d.children) {
-            hide_children(d)
-        } else {
-            if(on_click_display_depth>1){
-                display_nested_children(d, on_click_display_depth)
-            } else{
-                display_children(d)
-            }
-        }
-    }
-
-    async function dbclick(d){
+        console.log("click")
         if (d.children) {
             hide_children(d)
         } else {
             if(on_click_display_depth==1){
-                display_nested_children(d, 2)
+                display_children(d)
+            } else{
+                await display_nested_children(d, on_click_display_depth)
+            }
+        }
+    }
+
+    async function dblclick(d){
+        console.log("double click")
+        if (d.children) {
+            hide_children(d)
+        } else {
+            if(on_click_display_depth==1){
+                await display_nested_children(d, 2)
             } else{
                 display_children(d)
             }
