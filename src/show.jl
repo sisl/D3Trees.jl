@@ -58,6 +58,7 @@ function Base.show(f::IO, m::MIME"text/html", t::D3Tree)
                 var initExpand = $(get(t.options, :init_expand, 0));
                 var initDuration = $(get(t.options, :init_duration, 750));
                 var svgHeight = $(get(t.options, :svg_height, 600));
+                var on_click_display_depth = $(get(t.options, :on_click_display_depth, 1));
                 var tree_url = "$tree_url";
                 $js
                 })();

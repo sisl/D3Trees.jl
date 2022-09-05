@@ -255,24 +255,48 @@ function showTree() {
       });
     }
 
-    // Toggle children on click, fetch from Julia server if necessary
-    function click(d) {
-        if (d.children) {
-            d._children = d.children;
-            d.children = null;
-            update(d, 750);
-        } else if (d._children) {
+    function hide_children(d){
+        d._children = d.children;
+        d.children = null;
+        update(d, 750);
+    }
+
+    async function display_children(d){
+        if (d._children) {
             d.children = d._children;
             d._children = null;
             update(d, 750);
         } else if(treeData.unexpanded_children.has(d.dataID)) {
-            fetchSubtree(d.dataID)
+            await fetchSubtree(d.dataID)
             .then(subtree => addSubTreeData(subtree))
             .then(() => initializeChildren(d, 1))
-            .then(() => update(d, 750))
+            .then(() => update(d, 750));
         } else {
             initializeChildren(d, 1);
             update(d, 750);
+        }
+    }
+
+    async function click(d) {
+        if (d.children) {
+            hide_children(d)
+        } else {
+            let depth = 1;
+            let expanding=null;
+            let to_expand=[d];
+            while(depth<=on_click_display_depth){
+                expanding=to_expand;
+                to_expand=[];
+                // console.log([depth, expanding.length])
+                while(expanding.length>0){
+                    let n = expanding.pop();
+                    await display_children(n)
+                    if(n.children && n.children.length>0){
+                        to_expand.push(...n.children);
+                    }
+                }
+                depth++;
+            }
         }
     }
 
