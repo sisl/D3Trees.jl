@@ -70,7 +70,8 @@ function showTree() {
         root;
 
     var tree = d3.layout.tree()
-        .size([width, height]);
+        .nodeSize([100, 100]); // For dynamic spacing between nodes, seee https://stackoverflow.com/questions/17558649/d3-tree-layout-separation-between-nodes-using-nodesize
+        // .size([width, height]);
 
     var diagonal = d3.svg.diagonal();
         //.projection(function(d) { return [d.y, d.x]; });
@@ -87,9 +88,15 @@ function showTree() {
 
     d3.select("#"+div+"_svg").selectAll("*").remove();
 
-    var svg = d3.select("#"+div+"_svg")
-        .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var svg = d3.select("#"+div+"_svg").append("svg:svg")
+        .attr("class", "svg_container")
+        .attr("width", width)
+        .attr("height", height)
+        .style("overflow", "scroll")
+        .append("svg:g")
+        .attr("class", "drawarea")
+        .append("svg:g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // console.log("tree data:");
     // console.log(treeData[rootID]);
@@ -132,7 +139,7 @@ function showTree() {
       width = $("#"+div).width() - margin.right - margin.left,
       height = $("#"+div).height() - margin.top - margin.bottom;
 
-      tree.size([width,height]);
+    //   tree.size([width,height]);
       d3.select("#"+div).attr("width", width + margin.right + margin.left)
             .attr("height", height + margin.top + margin.bottom);
       d3.select("#"+div+"_svg").attr("width", width + margin.right + margin.left)
@@ -263,6 +270,13 @@ function showTree() {
         d.x0 = d.x;
         d.y0 = d.y;
       });
+
+      // Enables zoom and pan
+      d3.select("svg")
+      .call(d3.behavior.zoom()
+        .scaleExtent([0.5, 5])
+        .on("zoom", zoom))
+        .on("dblclick.zoom", null) // disable doubleclick zoom
     }
 
     function hide_children(d){
@@ -330,5 +344,23 @@ function showTree() {
             }
         }
     }
+
+    // Allows zoom and pan, see https://stackoverflow.com/questions/17405638/d3-js-zooming-and-panning-a-collapsible-tree-diagram
+    function zoom() {
+        var scale = d3.event.scale,
+          translation = d3.event.translate,
+          tbound = -height * scale,
+          bbound = height * scale,
+          lbound = -(width - margin.left) * scale,
+          rbound = (width - margin.right) * scale;
+        // limit translation to thresholds
+        translation = [
+          Math.max(Math.min(translation[0], rbound), lbound),
+          Math.max(Math.min(translation[1], bbound), tbound)
+        ];
+        d3.select(".drawarea")
+          .attr("transform", "translate(" + translation + ")" +
+            " scale(" + scale + ")");
+      }
 
 }
