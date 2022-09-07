@@ -88,6 +88,8 @@ function showTree() {
 
     d3.select("#"+div+"_svg").selectAll("*").remove();
 
+    let root_position = [(width+margin.left+margin.right)/2,margin.top] // where in the drawarea to show root
+
     var svg = d3.select("#"+div+"_svg")
         // .append("svg:svg")
         // .attr("class", "svg_container")
@@ -97,11 +99,12 @@ function showTree() {
         .append("svg:g")
         .attr("class", "drawarea")
         // .append("svg:g")
-        .attr("transform", "translate(" + (width+margin.left+margin.right)/2 + "," + margin.top + ")");
+        .attr("transform", "translate(" + root_position + ")");
 
     // Enables zoom and pan
-    d3.select("svg")
+    d3.select("#"+div+"_svg")
         .call(d3.behavior.zoom()
+            .translate(root_position) // initial pan from the position of the root
         // .scaleExtent([0.5, 5])
         .on("zoom", zoom))
         .on("dblclick.zoom", null) 
