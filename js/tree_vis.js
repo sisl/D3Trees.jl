@@ -88,15 +88,16 @@ function showTree() {
 
     d3.select("#"+div+"_svg").selectAll("*").remove();
 
-    var svg = d3.select("#"+div+"_svg").append("svg:svg")
-        .attr("class", "svg_container")
-        .attr("width", width)
-        .attr("height", height)
-        .style("overflow", "scroll")
+    var svg = d3.select("#"+div+"_svg")
+        // .append("svg:svg")
+        // .attr("class", "svg_container")
+        // .attr("width", width)
+        // .attr("height", height)
+        // .style("overflow", "scroll")
         .append("svg:g")
         .attr("class", "drawarea")
-        .append("svg:g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // .append("svg:g")
+        .attr("transform", "translate(" + (width+margin.left+margin.right)/2 + "," + margin.top + ")");
 
     // Enables zoom and pan
     d3.select("svg")
