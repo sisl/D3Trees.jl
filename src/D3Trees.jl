@@ -104,6 +104,7 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
 - `init_expand::Integer` - levels to expand initially.
 - `init_duration::Number` - duration of the initial animation in ms.
 - `svg_height::Number` - height of the svg containing the tree in px.
+- `on_click_display_depth::Integer` - how many tree levels are expanded with single click.
 """
 function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)
