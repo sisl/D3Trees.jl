@@ -362,7 +362,7 @@ function showTree() {
         //   Math.max(Math.min(translation[0], rbound), lbound),
         //   Math.max(Math.min(translation[1], bbound), tbound)
         // ];
-        d3.select(".drawarea")
+        d3.select("#"+div+"_svg").select(".drawarea")
           .attr("transform", "translate(" + translation + ")" +
             " scale(" + scale + ")");
       }
