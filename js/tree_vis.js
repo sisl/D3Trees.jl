@@ -70,8 +70,8 @@ function showTree() {
         root;
 
     var tree = d3.layout.tree()
-        .nodeSize([60, 60]); // For dynamic spacing between nodes, see https://stackoverflow.com/questions/17558649/d3-tree-layout-separation-between-nodes-using-nodesize
-        // .size([width, height]);
+        .nodeSize(svgNodeSize); // For fixed spacing between nodes, see https://stackoverflow.com/questions/17558649/d3-tree-layout-separation-between-nodes-using-nodesize
+        // .size([width, height]); // For dynamic spacing between nodes. Using this option adjusts the length of the edges to fit pre-fixed svg area.
 
     var diagonal = d3.svg.diagonal();
         //.projection(function(d) { return [d.y, d.x]; });
