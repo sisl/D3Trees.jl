@@ -51,7 +51,7 @@ function addSubTreeData(subtree){
     treeData.unexpanded_children = new Set([...treeData.unexpanded_children, ...subtree.unexpanded_children]);
     treeData.text.push(...subtree.text);
     treeData.tooltip.push(...subtree.tooltip);
-    treeData.style.push(...subtree.style);
+    // treeData.style.push(...subtree.style);
     treeData.node_svg.push(...subtree.node_svg);
     treeData.link_style.push(...subtree.link_style);
 }
@@ -156,8 +156,9 @@ function showTree() {
 
       // Enter the selected node_svg
       nodeEnter.each(function(d){
-        var nodeSvg = d3.select(this).html(treeData.node_svg[d.dataID])
-        nodeSvg.attr("style", function(d) { return treeData.style[d.dataID]; } )
+        d3.select(this).html(treeData.node_svg[d.dataID])
+        // var nodeSvg = d3.select(this).html(treeData.node_svg[d.dataID])
+        // nodeSvg.attr("style", function(d) { return treeData.style[d.dataID]; } )
       })
         
       
