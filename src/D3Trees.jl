@@ -17,8 +17,8 @@ export
     inchrome,
     inbrowser
 
-const SVG_CIRCLE="<circle r=\"10px\" style=\"r:14\"></circle>"
-const SVG_SQUARE="<rect height=\"20px\" width=\"20px\" style=\"opacity:0.7\"></rect>"
+const SVG_CIRCLE="<circle r=\"10px\"></circle>"
+const SVG_SQUARE="<rect height=\"20px\" width=\"20px\"></rect>"
 
 struct D3Tree
     children::Vector{Vector{Int}}
