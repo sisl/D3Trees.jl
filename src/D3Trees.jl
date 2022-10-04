@@ -17,16 +17,12 @@ export
     inchrome,
     inbrowser
 
-const SVG_CIRCLE=Dict("shape"=>"circle", "r"=>"10px")
-const SVG_SQUARE=Dict("shape"=>"rect", "width"=>"20px", "height"=>"20px")
-
 struct D3Tree
     children::Vector{Vector{Int}}
     unexpanded_children::Dict{Int,Any}
     text::Vector{String}
     tooltip::Vector{String}
     style::Vector{String}
-    shape::Vector{Dict{String, String}}
     link_style::Vector{String}
     title::String
     options::Dict{Symbol,Any}
@@ -115,7 +111,6 @@ function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
         get(kwd, :text, collect(string(i) for i in 1:n)),
         get(kwd, :tooltip, fill("", n)),
         get(kwd, :style, fill("", n)),
-        get(kwd, :shape, fill(SVG_CIRCLE, n)),
         get(kwd, :link_style, fill("", n)),
         get(kwd, :title, "Julia D3Tree"),
         convert(Dict{Symbol,Any}, kwd),
@@ -145,13 +140,6 @@ Return the html style for the D3Trees node corresponding to AbstractTrees node `
 style(node) = ""
 
 """
-    D3Trees.shape(n)
-
-Return the D3.js shape of AbstractTrees node `n`
-"""
-shape(node) = SVG_CIRCLE
-
-"""
     D3Trees.link_style(n)
 
 Return the html style for the link leading to the D3Trees node corresponding to AbstractTrees node `n`
@@ -172,8 +160,6 @@ tooltip(n::D3TreeNode) = n.tree.tooltip[n.index]
 tooltip(t::D3Tree) = t.tooltip[1]
 style(n::D3TreeNode) = n.tree.style[n.index]
 style(t::D3Tree) = t.style[1]
-shape(n::D3TreeNode) = n.tree.shape[n.index]
-shape(t::D3Tree) = t.shape[1]
 link_style(n::D3TreeNode) = n.tree.link_style[n.index]
 link_style(t::D3Tree) = t.link_style[1]
 
@@ -200,7 +186,6 @@ function push_node!(t::D3Tree, node, lazy_expand_after_depth::Int, node_dict=not
     push!(t.text, text(node))
     push!(t.tooltip, tooltip(node))
     push!(t.style, style(node))
-    push!(t.shape, shape(node))
     push!(t.link_style, link_style(node))
 
     if lazy_expand_after_depth > 0
@@ -232,7 +217,6 @@ struct D3OffsetSubtree
             subtree.text[2:end],
             subtree.tooltip[2:end],
             subtree.style[2:end],
-            subtree.shape[2:end],
             subtree.link_style[2:end],
             subtree.title,
             subtree.options

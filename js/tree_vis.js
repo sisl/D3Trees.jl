@@ -181,27 +181,9 @@ function showTree() {
             dblclick(d);
             })
 
-      // Enter the selected shape
-      nodeEnter.each(function(d){
-        var shape = d3.select(this).append(treeData.shape[d.dataID].shape)
-        for (const [key, value] of Object.entries(treeData.shape[d.dataID])) {
-            if(key!="shape"){
-                shape.attr(key, value)
-            }
-        }
-        shape.attr("style", function(d) { return treeData.style[d.dataID]; } )
-      })
-        
-      
-    //   nodeEnter.append("rect")
-    //       .attr("width", "20px")
-    //       .attr("height", "20px")
-    //       .attr("style", function(d) { //console.log(treeData); 
-    //         return treeData.style[d.dataID]; } )
-    
-    //   nodeEnter.append("circle")
-    //       .attr("r", "10px")
-    //       .attr("style", function(d) { return treeData.style[d.dataID]; } )
+      nodeEnter.append("circle")
+          .attr("r", "10px")
+          .attr("style", function(d) { return treeData.style[d.dataID]; } )
 
       var tbox = nodeEnter.append("text")
           .attr("y", 25)
