@@ -19,7 +19,6 @@
     @test length(t1.children) == length(t2.children) == length(t3.children)
     @test sort(t1.text) == sort(t2.text) == sort(t3.text)
     @test sort(t1.tooltip) == sort(t2.tooltip) == sort(t2.tooltip)
-    @test sort(t1.style) == sort(t2.style) == sort(t2.style)
     @test sort(t1.link_style) == sort(t2.link_style) == sort(t2.link_style)
     t1_unexplored_children = sort(collect(values(t1.unexpanded_children)); lt=(x, y) -> x.id < y.id)
     t2_unexplored_children = sort(collect(values(t2.unexpanded_children)); lt=(x, y) -> x.id < y.id)

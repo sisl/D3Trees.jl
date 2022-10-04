@@ -80,7 +80,7 @@ Deep trees can be expanded on demand from the visualization by clicking on unexp
 
 The lazy loading can be controlled through two main keyword arguments:
 
-- `lazy_expand_after_depth` which controls the initial expansion depth of the tree, before being sent as json to the visualization, 
+- `lazy_expand_after_depth` which controls the initial expansion depth of the tree, before being sent as json to the visualization,
 - `lazy_subtree_depth` which determines the depth of on-demand expanded subtrees.
 
 ```julia
@@ -90,7 +90,8 @@ ldroot = LimitedDepthTree()
 D3Tree(ldroot, lazy_expand_after_depth=0,  lazy_subtree_depth=1)
 ```
 
-returns
+can then be expanded to a following tree by clicking on leafs:
+
 ![Expanded tree with style](img/deep_tree.png)
 
 ## Text output
@@ -115,7 +116,7 @@ julia> t = D3Tree(children)
 
 ## Browser compatibility
 
-This package works best in the Google chrome or chromium browser.
+This package works best in the Google Chrome or Chromium browser.
 
 ## Limitations
 

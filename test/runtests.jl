@@ -10,12 +10,10 @@ include("binary_abstract_trees.jl")
 @testset "simple tree" begin
     children = [[2,3], [], [4], []]
     text = ["one\n(second line)", "2", "III", "four"]
-    style = ["", "fill:red", "r:14", "opacity:0.7"]
     link_style = ["", "stroke:blue", "", "stroke-width:10px"]
     tooltip = ["pops", "up", "on", "hover"]
     t1 = D3Tree(children,
             text=text,
-            style=style,
             tooltip=tooltip,
             link_style=link_style)
 
@@ -25,7 +23,6 @@ include("binary_abstract_trees.jl")
 
     t2 = D3Tree(children,
                 text=text,
-                style=style,
                 tooltip=tooltip,
                 link_style=link_style,
                 init_expand=1000,
@@ -61,7 +58,6 @@ include("binary_abstract_trees.jl")
     @time t4 = D3Tree(t1, detect_repeat=false)
     @test t3.text == t1.text
     @test t3.tooltip == t1.tooltip
-    @test t3.style == t1.style
     @test t3.link_style == t1.link_style
 
     inbrowser(D3Tree([[2],[]]), `ls`)

@@ -17,12 +17,15 @@ export
     inchrome,
     inbrowser
 
+svg_circle(;style="")= isempty(style) ? "<circle r=\"10px\"></circle>" : "<circle r=\"10px\" style=\"$(style)\"></circle>"
+
 struct D3Tree
     children::Vector{Vector{Int}}
     unexpanded_children::Dict{Int,Any}
     text::Vector{String}
     tooltip::Vector{String}
-    style::Vector{String}
+    # style::Vector{String}
+    node_svg::Vector{String}
     link_style::Vector{String}
     title::String
     options::Dict{Symbol,Any}
@@ -101,18 +104,33 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
 - `init_duration::Number` - duration of the initial animation in ms.
 - `svg_height::Number` - height of the svg containing the tree in px.
 """
-function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
+function _D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)
     n = length(children)
     return D3Tree(children,
         Dict(),
         get(kwd, :text, collect(string(i) for i in 1:n)),
         get(kwd, :tooltip, fill("", n)),
-        get(kwd, :style, fill("", n)),
+        get(kwd, :node_svg, fill(svg_circle(), n)),
         get(kwd, :link_style, fill("", n)),
         get(kwd, :title, "Julia D3Tree"),
         convert(Dict{Symbol,Any}, kwd),
     )
+end
+
+function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
+    kwd = Dict(kwargs)
+    if !haskey(kwd, :style)
+        return _D3Tree(children; kwargs...)
+    else
+        if haskey(kwd, :node_svg)
+            @warn "`style` has no effect when `node_svg` is provided directly"
+            return _D3Tree(children; kwargs...)
+        else
+            node_svg = map(style->svg_circle(style=style), get(kwd, :style, nothing))
+            return _D3Tree(children; node_svg, kwargs...)
+        end
+    end
 end
 
 
@@ -138,6 +156,13 @@ Return the html style for the D3Trees node corresponding to AbstractTrees node `
 style(node) = ""
 
 """
+    D3Trees.node_svg(n)
+
+Return the node svg of AbstractTrees node `n`
+"""
+node_svg(node) = svg_circle(style=style(node))
+
+"""
     D3Trees.link_style(n)
 
 Return the html style for the link leading to the D3Trees node corresponding to AbstractTrees node `n`
@@ -156,8 +181,10 @@ AbstractTrees.printnode(io::IO, n::D3TreeNode) = print(io, n.tree.text[n.index])
 AbstractTrees.printnode(io::IO, t::D3Tree) = print(io, t.text[1])
 tooltip(n::D3TreeNode) = n.tree.tooltip[n.index]
 tooltip(t::D3Tree) = t.tooltip[1]
-style(n::D3TreeNode) = n.tree.style[n.index]
-style(t::D3Tree) = t.style[1]
+# style(n::D3TreeNode) = n.tree.style[n.index]
+# style(t::D3Tree) = t.style[1]
+node_svg(n::D3TreeNode) = n.tree.node_svg[n.index]
+node_svg(t::D3Tree) = t.node_svg[1]
 link_style(n::D3TreeNode) = n.tree.link_style[n.index]
 link_style(t::D3Tree) = t.link_style[1]
 
@@ -183,7 +210,8 @@ function push_node!(t::D3Tree, node, lazy_expand_after_depth::Int, node_dict=not
     push!(t.children, Int[])
     push!(t.text, text(node))
     push!(t.tooltip, tooltip(node))
-    push!(t.style, style(node))
+    # push!(t.style, style(node))
+    push!(t.node_svg, node_svg(node))
     push!(t.link_style, link_style(node))
 
     if lazy_expand_after_depth > 0
@@ -214,7 +242,8 @@ struct D3OffsetSubtree
             Dict(ind + offset => node for (ind, node) in pairs(subtree.unexpanded_children)),
             subtree.text[2:end],
             subtree.tooltip[2:end],
-            subtree.style[2:end],
+            # subtree.style[2:end],
+            subtree.node_svg[2:end],
             subtree.link_style[2:end],
             subtree.title,
             subtree.options
@@ -243,7 +272,8 @@ function expand_node!(t::D3Tree, ind::Int, lazy_expand_after_depth::Int)
     merge!(t.unexpanded_children, offset_subtree.subtree.unexpanded_children)
     append!(t.text, offset_subtree.subtree.text)
     append!(t.tooltip, offset_subtree.subtree.tooltip)
-    append!(t.style, offset_subtree.subtree.style)
+    # append!(t.style, offset_subtree.subtree.style)
+    append!(t.node_svg, offset_subtree.subtree.node_svg)
     append!(t.link_style, offset_subtree.subtree.link_style)
 
     return offset_subtree
