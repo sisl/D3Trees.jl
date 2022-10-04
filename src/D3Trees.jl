@@ -17,8 +17,8 @@ export
     inchrome,
     inbrowser
 
-const SVG_CIRCLE=Dict("shape"=>"circle", "r"=>"10px")
-const SVG_SQUARE=Dict("shape"=>"rect", "width"=>"20px", "height"=>"20px")
+const SVG_CIRCLE="<circle r=\"10px\" style=\"r:14\"></circle>"
+const SVG_SQUARE="<rect height=\"20px\" width=\"20px\" style=\"opacity:0.7\"></rect>"
 
 struct D3Tree
     children::Vector{Vector{Int}}
@@ -26,7 +26,7 @@ struct D3Tree
     text::Vector{String}
     tooltip::Vector{String}
     style::Vector{String}
-    shape::Vector{Dict{String, String}}
+    node_svg::Vector{String}
     link_style::Vector{String}
     title::String
     options::Dict{Symbol,Any}
@@ -113,7 +113,7 @@ function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
         get(kwd, :text, collect(string(i) for i in 1:n)),
         get(kwd, :tooltip, fill("", n)),
         get(kwd, :style, fill("", n)),
-        get(kwd, :shape, fill(SVG_CIRCLE, n)),
+        get(kwd, :node_svg, fill(SVG_CIRCLE, n)),
         get(kwd, :link_style, fill("", n)),
         get(kwd, :title, "Julia D3Tree"),
         convert(Dict{Symbol,Any}, kwd),
@@ -143,11 +143,11 @@ Return the html style for the D3Trees node corresponding to AbstractTrees node `
 style(node) = ""
 
 """
-    D3Trees.shape(n)
+    D3Trees.node_svg(n)
 
-Return the D3.js shape of AbstractTrees node `n`
+Return the node svg of AbstractTrees node `n`
 """
-shape(node) = SVG_CIRCLE
+node_svg(node) = SVG_CIRCLE
 
 """
     D3Trees.link_style(n)
@@ -170,8 +170,8 @@ tooltip(n::D3TreeNode) = n.tree.tooltip[n.index]
 tooltip(t::D3Tree) = t.tooltip[1]
 style(n::D3TreeNode) = n.tree.style[n.index]
 style(t::D3Tree) = t.style[1]
-shape(n::D3TreeNode) = n.tree.shape[n.index]
-shape(t::D3Tree) = t.shape[1]
+node_svg(n::D3TreeNode) = n.tree.node_svg[n.index]
+node_svg(t::D3Tree) = t.node_svg[1]
 link_style(n::D3TreeNode) = n.tree.link_style[n.index]
 link_style(t::D3Tree) = t.link_style[1]
 
@@ -198,7 +198,7 @@ function push_node!(t::D3Tree, node, lazy_expand_after_depth::Int, node_dict=not
     push!(t.text, text(node))
     push!(t.tooltip, tooltip(node))
     push!(t.style, style(node))
-    push!(t.shape, shape(node))
+    push!(t.node_svg, node_svg(node))
     push!(t.link_style, link_style(node))
 
     if lazy_expand_after_depth > 0
@@ -230,7 +230,7 @@ struct D3OffsetSubtree
             subtree.text[2:end],
             subtree.tooltip[2:end],
             subtree.style[2:end],
-            subtree.shape[2:end],
+            subtree.node_svg[2:end],
             subtree.link_style[2:end],
             subtree.title,
             subtree.options
@@ -260,7 +260,7 @@ function expand_node!(t::D3Tree, ind::Int, lazy_expand_after_depth::Int)
     append!(t.text, offset_subtree.subtree.text)
     append!(t.tooltip, offset_subtree.subtree.tooltip)
     append!(t.style, offset_subtree.subtree.style)
-    append!(t.shape, offset_subtree.subtree.shape)
+    append!(t.node_svg, offset_subtree.subtree.node_svg)
     append!(t.link_style, offset_subtree.subtree.link_style)
 
     return offset_subtree
