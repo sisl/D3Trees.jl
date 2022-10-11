@@ -60,7 +60,7 @@ potentially holding up a lot of memory. To reset the server and remove reference
 - `lazy_subtree_depth::Integer`: (default: 2) sets depth of subtrees fetched from D3Trees server
 - `port::Integer`: (default: 16370) specify server port for D3Trees server that will serve subtrees for visualization. Shutdown server by `shutdown_server(port)`.
 - `dry_run_lazy_vizualization::Function`: (default: t -> D3Trees.dry_run_server(port, t)) function that is ran once before visualization is started to speed up first fetch in the visualization. Provide custom function if your tree's children method takes a long time on first run.
-- Also supports, the non-vector arguments of the vector-of-vectors `D3Tree` constructor, i.e. `title`, `init_expand`, `init_duration`, `svg_height`.
+- Also supports, the non-vector arguments of the vector-of-vectors `D3Tree` constructor, e.g. `title`, `init_expand`, `init_duration`, `svg_height`, `svg_node_size`.
 """
 function D3Tree(node; detect_repeat::Bool=true, lazy_expand_after_depth::Integer=typemax(Int), kwargs...)
 
@@ -97,9 +97,11 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
 - `style::Vector{String}` - html style for each node.
 - `link_style::Vector{String}` - html style for each link.
 - `title::String` - html title.
-- `init_expand::Integer` - levels to expand initially.
-- `init_duration::Number` - duration of the initial animation in ms.
-- `svg_height::Number` - height of the svg containing the tree in px.
+- `init_expand::Integer`: (default `0`) - levels to expand initially.
+- `init_duration::Number`: (default `750`) - duration of the initial animation in ms.
+- `svg_height::Number`: (default `600`) - height of the svg containing the tree in px.
+- `svg_node_size::Tuple{Integer, Integer}`: (default: `(60, 60)`) - determines spacing of tree nodes by setting the [x, y] size of a bounding box around each visualized tree node.
+- `on_click_display_depth::Integer`: (default: `1`) - how many tree levels are expanded with single click.
 """
 function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)

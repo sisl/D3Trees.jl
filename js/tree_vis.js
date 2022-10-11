@@ -69,7 +69,8 @@ function showTree() {
         root;
 
     var tree = d3.layout.tree()
-        .size([width, height]);
+        .nodeSize(svgNodeSize); // For fixed spacing between nodes, see https://stackoverflow.com/questions/17558649/d3-tree-layout-separation-between-nodes-using-nodesize
+        // .size([width, height]); // For dynamic spacing between nodes. Using this option adjusts the length of the edges to fit pre-fixed svg area.
 
     var diagonal = d3.svg.diagonal();
         //.projection(function(d) { return [d.y, d.x]; });
@@ -86,9 +87,26 @@ function showTree() {
 
     d3.select("#"+div+"_svg").selectAll("*").remove();
 
+    let root_position = [(width+margin.left+margin.right)/2,margin.top] // where in the drawarea to show root
+
     var svg = d3.select("#"+div+"_svg")
-        .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // .append("svg:svg")
+        // .attr("class", "svg_container")
+        // .attr("width", width)
+        // .attr("height", height)
+        // .style("overflow", "scroll")
+        .append("svg:g")
+        .attr("class", "drawarea")
+        // .append("svg:g")
+        .attr("transform", "translate(" + root_position + ")");
+
+    // Enables zoom and pan
+    d3.select("#"+div+"_svg")
+        .call(d3.behavior.zoom()
+            .translate(root_position) // initial pan from the position of the root
+        // .scaleExtent([0.5, 5])
+        .on("zoom", zoom))
+        .on("dblclick.zoom", null) 
 
     // console.log("tree data:");
     // console.log(treeData[rootID]);
@@ -128,14 +146,14 @@ function showTree() {
     */
     function update(source, duration) {
 
-      width = $("#"+div).width() - margin.right - margin.left,
-      height = $("#"+div).height() - margin.top - margin.bottom;
+    //   width = $("#"+div).width() - margin.right - margin.left,
+    //   height = $("#"+div).height() - margin.top - margin.bottom;
 
-      tree.size([width,height]);
-      d3.select("#"+div).attr("width", width + margin.right + margin.left)
-            .attr("height", height + margin.top + margin.bottom);
-      d3.select("#"+div+"_svg").attr("width", width + margin.right + margin.left)
-             .attr("height", height + margin.top + margin.bottom);
+    // //   tree.size([width,height]);
+    //   d3.select("#"+div).attr("width", width + margin.right + margin.left)
+    //         .attr("height", height + margin.top + margin.bottom);
+    //   d3.select("#"+div+"_svg").attr("width", width + margin.right + margin.left)
+    //          .attr("height", height + margin.top + margin.bottom);
 
 
       // Compute the new tree layout.
@@ -148,10 +166,20 @@ function showTree() {
           .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
       // Enter any new nodes at the parent's previous position.
+      var timeout = null;
+      var double_click_timeout=300
       var nodeEnter = node.enter().append("g")
           .attr("class", "node")
           .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; })
-          .on("click", click)
+          .on("click", function(d){ 
+            clearTimeout(timeout);
+            timeout = setTimeout(function(d) {
+                click(d);}, double_click_timeout, d)
+            })
+          .on("dblclick", function(d){ 
+            clearTimeout(timeout);
+            dblclick(d);
+            })
 
       nodeEnter.append("circle")
           .attr("r", "10px")
@@ -248,13 +276,32 @@ function showTree() {
             d._children = null;
             update(d, 750);
         } else if(treeData.unexpanded_children.has(d.dataID)) {
+            console.log("Fetching subtrees!")
             await fetchSubtree(d.dataID)
             .then(subtree => addSubTreeData(subtree))
-            .then(() => initializeChildren(d, 1))
-            .then(() => update(d, 750));
+            .then(() => initializeChildren(d, 1));
+            update(d, 750);
         } else {
             initializeChildren(d, 1);
             update(d, 750);
+        }
+    }
+
+    async function display_nested_children(d, display_depth){
+        let depth = 1;
+        let expanding=null;
+        let to_expand=[d];
+        while(depth<=display_depth){
+            expanding=to_expand;
+            to_expand=[];
+            while(expanding.length>0){
+                let n = expanding.pop();
+                await display_children(n)
+                if(n.children && n.children.length>0){
+                    to_expand.push(...n.children);
+                }
+            }
+            depth++;
         }
     }
 
@@ -262,23 +309,43 @@ function showTree() {
         if (d.children) {
             hide_children(d)
         } else {
-            let depth = 1;
-            let expanding=null;
-            let to_expand=[d];
-            while(depth<=on_click_display_depth){
-                expanding=to_expand;
-                to_expand=[];
-                // console.log([depth, expanding.length])
-                while(expanding.length>0){
-                    let n = expanding.pop();
-                    await display_children(n)
-                    if(n.children && n.children.length>0){
-                        to_expand.push(...n.children);
-                    }
-                }
-                depth++;
+            if(on_click_display_depth==1){
+                display_children(d)
+            } else{
+                await display_nested_children(d, on_click_display_depth)
             }
         }
     }
+
+    async function dblclick(d){
+        if (d.children) {
+            hide_children(d)
+        } else {
+            if(on_click_display_depth==1){
+                await display_nested_children(d, 2)
+            } else{
+                display_children(d)
+            }
+        }
+    }
+
+    // Allows zoom and pan, see https://stackoverflow.com/questions/17405638/d3-js-zooming-and-panning-a-collapsible-tree-diagram
+    function zoom() {
+        console.log("zoom")
+        var scale = d3.event.scale,
+          translation = d3.event.translate,
+          tbound = -height * scale,
+          bbound = height * scale,
+          lbound = -(width - margin.left) * scale,
+          rbound = (width - margin.right) * scale;
+        // limit translation to thresholds
+        // translation = [
+        //   Math.max(Math.min(translation[0], rbound), lbound),
+        //   Math.max(Math.min(translation[1], bbound), tbound)
+        // ];
+        d3.select("#"+div+"_svg").select(".drawarea")
+          .attr("transform", "translate(" + translation + ")" +
+            " scale(" + scale + ")");
+      }
 
 }
