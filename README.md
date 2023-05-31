@@ -54,7 +54,7 @@ Optional arguments control other aspects of the style (use `julia> ?D3Tree` for 
 ```julia
 children = [[2,3], [], [4], []]
 text = ["one\n(second line)", "2", "III", "four"]
-style = ["", "fill:red", "r:14", "opacity:0.7"]
+style = ["", "fill:red", "r:14px", "opacity:0.7"]
 link_style = ["", "stroke:blue", "", "stroke-width:10px"]
 tooltip = ["pops", "up", "on", "hover"]
 t = D3Tree(children,
