@@ -91,3 +91,9 @@ function Base.show(io::IO, m::MIME"text/plain", t::D3Tree)
     show(io, m, D3TreeView(D3TreeNode(t, 1), get(t.options, :init_expanded, false) ? typemax(Int) : 3))
 end
 Base.show(io::IO, m::MIME"text/plain", v::D3TreeView) = shownode(io, v.root, v.depth, "", "")
+
+# Support for Visual Studio Code plot pane:
+Base.showable(::MIME"juliavscode/html", ::D3Tree) = true
+function Base.show(@nospecialize(io::IO), ::MIME"juliavscode/html", @nospecialize(t::D3Tree))
+    show(io, MIME("text/html"), t)
+end
