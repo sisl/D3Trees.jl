@@ -17,7 +17,6 @@ jobs:
       matrix:
         version:
           - "1"   # Earliest
-          - "1.7" # Latest
         os:
           - ubuntu-latest
           - windows-latest
@@ -33,7 +32,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       # using a cache can speed up execution times
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         env:
           cache-name: cache-artifacts
         with:
