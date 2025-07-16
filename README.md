@@ -35,7 +35,12 @@ creates a tree with four nodes. Nodes 2 and 3 are children of node 1, and node 4
 
 ## Displaying Trees
 
-In an IJulia notebook, the tree will automatically be displayed using D3.js. To get an interactive display in a chrome browser from the repl or a script, you can use the `inchrome` function. The `blink` function can also open it in a standalone window using the `Blink.jl` package.
+In an IJulia notebook or Pluto, the tree will automatically be displayed using D3.js. (see [issue #32](https://github.com/sisl/D3Trees.jl/issues/32)
+
+<img width="375" height="404" alt="image" src="https://github.com/user-attachments/assets/ea84e2a8-a558-4699-93f0-ac4ea80fb374" />
+
+
+To get an interactive display in a chrome browser from the repl or a script, you can use the `inchrome` function. The `blink` function can also open it in a standalone window using the `Blink.jl` package.
 
 ```julia
 children = [[2,3], [4,5], [6,7], [8,9], [1], [], [], [], []]
