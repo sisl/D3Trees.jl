@@ -2,7 +2,8 @@
 Convert datastructure to json, shift indeces to zero-indexing for use in javascript
 """
 function JSON.json(t::D3Tree)
-    data = Dict(key => getfield(t, key) for key ∈ fieldnames(D3Tree))
+    fields = (:children, :unexpanded_children, :text, :tooltip, :style, :link_style, :title)
+    data = Dict(key => getfield(t, key) for key ∈ fields)
     data[:children] = [Int[ind - 1 for ind ∈ list] for list ∈ data[:children]]
     data[:unexpanded_children] = Int[k - 1 for k ∈ keys(data[:unexpanded_children])]
     return json(data)
@@ -12,7 +13,8 @@ end
 Convert datastructure to json, shift indeces to zero-indexing for use in javascript
 """
 function JSON.json(st::D3OffsetSubtree)
-    data = Dict(key => getfield(st.subtree, key) for key ∈ fieldnames(D3Tree))
+    fields = (:children, :unexpanded_children, :text, :tooltip, :style, :link_style, :title)
+    data = Dict(key => getfield(st.subtree, key) for key ∈ fields)
     
     data[:root_children] = Int[ind - 1 for ind ∈ st.root_children]
     data[:root_id] = st.root_id - 1
