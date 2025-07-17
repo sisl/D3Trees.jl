@@ -82,6 +82,12 @@ end
     @nbinclude("../examples/lazy_load_deep_trees.ipynb")
 end
 
+@testset "vs code" begin
+    t = D3Tree([[2,3], [], [4], []])
+    @test showable(MIME("text/html"), t)
+    html_string = stringmime(MIME("juliavscode/html"), t)
+end
+
 @testset "tree expansion" begin
     include("test_tree_expansion.jl")
 end
