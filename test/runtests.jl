@@ -84,7 +84,7 @@ end
 
 @testset "vs code" begin
     t = D3Tree([[2,3], [], [4], []])
-    @test showable(MIME("text/html"), t)
+    @test showable(MIME("juliavscode/html"), t)
     html_string = stringmime(MIME("juliavscode/html"), t)
 end
 
