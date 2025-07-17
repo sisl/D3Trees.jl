@@ -26,6 +26,7 @@ struct D3Tree
     link_style::Vector{String}
     title::String
     options::Dict{Symbol,Any}
+    frender::NamedTuple{(:text, :tooltip, :style, :link_style)}
 end
 
 """
@@ -92,10 +93,10 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
   creates a tree with four nodes. Nodes 2 and 3 are children of node 1, and node 4 is the only child of node 3. Nodes 2 and 4 are childless.
 
 ## Keyword:
-- `text::Vector{String}` - text to appear under each node.
-- `tooltip::Vector{String}` - text to appear when hovering over each node.
-- `style::Vector{String}` - html style for each node.
-- `link_style::Vector{String}` - html style for each link.
+- `text::Union{AbstractVector{<:AbstractString},Base.Callable}` - text to appear under each node, resp. a function `text(node)` to generate it.
+- `tooltip::Union{AbstractVector{<:AbstractString},Base.Callable}` - text to appear when hovering over each node or a function.
+- `style::Union{AbstractVector{<:AbstractString},Base.Callable}` - html style for each node or a function.
+- `link_style::Union{AbstractVector{<:AbstractString},Base.Callable}` - html style for each link or a function.
 - `title::String` - html title.
 - `init_expand::Integer`: (default `0`) - levels to expand initially.
 - `init_duration::Number`: (default `750`) - duration of the initial animation in ms.
@@ -106,14 +107,64 @@ Construct a tree to be displayed using D3 in a browser or ipython notebook, spec
 function D3Tree(children::AbstractVector{<:AbstractVector}; kwargs...)
     kwd = Dict(kwargs)
     n = length(children)
+
+    v_text, f_text = if haskey(kwd, :text)
+        kw_text = kwd[:text]
+        if kw_text isa Base.AbstractVector
+            convert(Vector{String}, kw_text), text
+        elseif kw_text isa Base.Callable
+            fill("", n), kw_text
+        else
+            throw(ArgumentError("D3Tree kwwarg text must be an AbstractVector{<:AbstractString} or a Base.Callable"))
+        end
+    else
+        collect(string(i) for i in 1:n), text
+    end
+
+    v_tooltip, f_tooltip = if haskey(kwd, :tooltip)
+        kw_tooltip = kwd[:tooltip]
+        if kw_tooltip isa Base.AbstractVector
+            convert(Vector{String}, kw_tooltip), tooltip
+        elseif kw_tooltip isa Base.Callable
+            fill("", n), kw_tooltip
+        else throw(ArgumentError("D3Tree kwwarg tooltip must be an AbstractVector{<:AbstractString} or a Base.Callable"))
+        end
+    else
+        fill("", n), tooltip
+    end
+
+    v_style, f_style = if haskey(kwd, :style)
+        kw_style = kwd[:style]
+        if kw_style isa Base.AbstractVector
+            convert(Vector{String}, kw_style), style
+        elseif kw_style isa Base.Callable
+            fill("", n), kw_style
+        else throw(ArgumentError("D3Tree kwwarg style must be an AbstractVector{<:AbstractString} or a Base.Callable"))
+        end
+    else
+        fill("", n), style
+    end
+
+    v_link_style, f_link_style = if haskey(kwd, :link_style)
+        kw_link_style = kwd[:link_style]
+        if kw_link_style isa Base.AbstractVector
+            convert(Vector{String}, kw_link_style), link_style
+        elseif kw_link_style isa Base.Callable
+            fill("", n), kw_link_style
+        else throw(ArgumentError("D3Tree kwwarg link_style must be an AbstractVector{<:AbstractString} or a Base.Callable"))
+        end
+    else
+        fill("", n), link_style
+    end
+
+    frender = (text = f_text, tooltip = f_tooltip, style = f_style, link_style = f_link_style)
+
     return D3Tree(children,
         Dict(),
-        get(kwd, :text, collect(string(i) for i in 1:n)),
-        get(kwd, :tooltip, fill("", n)),
-        get(kwd, :style, fill("", n)),
-        get(kwd, :link_style, fill("", n)),
+        v_text, v_tooltip, v_style, v_link_style,
         get(kwd, :title, "Julia D3Tree"),
         convert(Dict{Symbol,Any}, kwd),
+        frender,
     )
 end
 
@@ -183,10 +234,10 @@ function push_node!(t::D3Tree, node, lazy_expand_after_depth::Int, node_dict=not
     end
 
     push!(t.children, Int[])
-    push!(t.text, text(node))
-    push!(t.tooltip, tooltip(node))
-    push!(t.style, style(node))
-    push!(t.link_style, link_style(node))
+    push!(t.text, t.frender.text(node))
+    push!(t.tooltip, t.frender.tooltip(node))
+    push!(t.style, t.frender.style(node))
+    push!(t.link_style, t.frender.link_style(node))
 
     if lazy_expand_after_depth > 0
         for c in children(node)
@@ -219,7 +270,8 @@ struct D3OffsetSubtree
             subtree.style[2:end],
             subtree.link_style[2:end],
             subtree.title,
-            subtree.options
+            subtree.options,
+            subtree.frender
         )
         new(root_children, offset_subtree, root_id)
     end
@@ -234,7 +286,7 @@ function expand_node!(t::D3Tree, ind::Int, lazy_expand_after_depth::Int)
     node = pop!(t.unexpanded_children, ind)
 
     # TODO: also pass other options from t?
-    subtree = D3Tree(node; lazy_expand_after_depth=lazy_expand_after_depth)
+    subtree = D3Tree(node; lazy_expand_after_depth=lazy_expand_after_depth, t.options...)
     offset = length(t.children) - 1
 
     offset_subtree = D3OffsetSubtree(ind, subtree, offset)
