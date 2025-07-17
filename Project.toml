@@ -1,7 +1,7 @@
 name = "D3Trees"
 uuid = "e3df1716-f71e-5df9-9e2d-98e193103c45"
 repo = "https://github.com/sisl/D3Trees.jl.git"
-version = "0.3.3"
+version = "0.3.4"
 
 [deps]
 # Blink - not compatible with HTTP.jl v1 yet
