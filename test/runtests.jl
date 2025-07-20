@@ -33,6 +33,16 @@ include("binary_abstract_trees.jl")
                 svg_height=300
             )
 
+    t3 = D3Tree(children,
+                text=(node -> string(node)),
+                style=(node -> ""),
+                tooltip=(node -> "tooltip"),
+                link_style=(node -> ""),
+                init_expand=1000,
+                init_duration=5000,
+                svg_height=300
+            )
+
     # inchrome(t1)
     # inbrowser(t1, "firefox")
     # inchrome(t2)
