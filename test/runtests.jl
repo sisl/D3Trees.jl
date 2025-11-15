@@ -1,5 +1,5 @@
 using D3Trees
-using JSON
+using JSON: json
 using Test
 using NBInclude
 using Base64
@@ -42,11 +42,6 @@ include("binary_abstract_trees.jl")
                 init_duration=5000,
                 svg_height=300
             )
-
-    # inchrome(t1)
-    # inbrowser(t1, "firefox")
-    # inchrome(t2)
-    # inbrowser(t2, "firefox")
 
     @show D3Trees.children(D3TreeNode(t1, 1))
     show(stdout, MIME("text/plain"), t1)

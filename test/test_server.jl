@@ -2,8 +2,10 @@ using HTTP
 using Sockets
 using Logging
 
+#=
 debuglogger = ConsoleLogger(stderr, Logging.Debug)
 global_logger(debuglogger)
+=#
 
 ldroot = LimitedDepthTree()
 

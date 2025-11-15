@@ -1,6 +1,7 @@
 module D3Trees
 
-using JSON
+import JSON
+using JSON: json
 #using Blink - not yet compatible with HTTP.jl v1
 using Random
 using AbstractTrees
