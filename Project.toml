@@ -1,10 +1,9 @@
 name = "D3Trees"
 uuid = "e3df1716-f71e-5df9-9e2d-98e193103c45"
-repo = "https://github.com/sisl/D3Trees.jl.git"
 version = "0.3.5"
+repo = "https://github.com/sisl/D3Trees.jl.git"
 
 [deps]
-# Blink - not compatible with HTTP.jl v1 yet
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
@@ -13,9 +12,9 @@ Sockets = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [compat]
 AbstractTrees = "0.3, 0.4"
-JSON = "0.20, 0.21"
-julia = "1"
 HTTP = "1"
+JSON = "0.20, 0.21, 1"
+julia = "1"
 
 [extras]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
