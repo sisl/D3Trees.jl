@@ -2,12 +2,14 @@
 :root {
   --background-color: white;
   --text-color: black;
+  --link-color: #cccccc;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background-color: black;
     --text-color: white;
+    --link-color: #555555;
   }
 }
 
@@ -46,21 +48,24 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     font-style: normal;
     font-size: 12px;
+    fill: var(--text-color);
 }
 .link /* path */ {
     fill: none;
-    stroke: #cccccc;
+    stroke: var(--link-color);
     stroke-width: 2px;
 }
 .link text {
     font-family: Arial, Helvetica, sans-serif;
     font-style: normal;
     font-size: 12px;
+    fill: var(--text-color);
 }
 .hover text{
     font-family: Arial, Helvetica, sans-serif;
     font-style: normal;
     font-size: 12px;
+    fill: var(--text-color);
 }
 
 /*
